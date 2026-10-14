@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Phone, Mail, MapPin, Search, ArrowRight, CheckCircle2, 
   Send, ExternalLink, ShieldCheck, Truck, Award,
-  X, MessageSquare, Layers, Building2, Menu as MenuIcon
+  X, MessageSquare, Layers, Building2, ShoppingCart, Menu as MenuIcon
 } from 'lucide-react';
 import { categories, products } from './data/products';
 import logoImg from './images/image.png';
@@ -11,6 +11,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('default');
   const [modalType, setModalType] = useState(null); // 'partner', 'quote', 'supplier', null
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -18,13 +19,19 @@ export default function App() {
   const [newsletterSuccess, setNewsletterSuccess] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
 
-  // Filter products by selected category and search query
+  // Filter & sort products
   const filteredProducts = products.filter(item => {
     const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           item.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           item.categoryName.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
+  }).sort((a, b) => {
+    if (sortBy === 'price-low') return a.priceNumeric - b.priceNumeric;
+    if (sortBy === 'price-high') return b.priceNumeric - a.priceNumeric;
+    if (sortBy === 'rating') return b.rating - a.rating;
+    if (sortBy === 'latest') return b.id - a.id;
+    return 0;
   });
 
   const handleOpenQuote = (product) => {
@@ -321,9 +328,10 @@ export default function App() {
             </div>
           </section>
 
-          {/* EXACT "Featured Products" SECTION */}
+          {/* EXACT "Featured Products" SECTION WITH 5 AUTHENTIC LIVE PRODUCTS */}
           <section id="featured-products-section" className="section-wrapper" style={{ paddingTop: '20px' }}>
             <div className="section-header-center">
+              <span className="section-tag">OFFICIAL STORE CATALOG</span>
               <h2 className="section-title">Featured Products</h2>
             </div>
 
@@ -333,7 +341,7 @@ export default function App() {
                 className={`filter-tab ${selectedCategory === 'all' ? 'active' : ''}`}
                 onClick={() => setSelectedCategory('all')}
               >
-                All Categories ({products.length})
+                All Products ({products.length})
               </button>
               {categories.map(cat => (
                 <button
@@ -346,19 +354,40 @@ export default function App() {
               ))}
             </div>
 
-            {/* Search Input */}
-            <div className="search-container">
-              <Search className="search-icon" size={18} />
-              <input
-                type="text"
-                placeholder="Search products by title, SKU, or category..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="search-input"
-              />
+            {/* Controls Bar: Search + Sorting */}
+            <div className="catalog-toolbar">
+              <div className="search-container">
+                <Search className="search-icon" size={18} />
+                <input
+                  type="text"
+                  placeholder="Search products by title, SKU, or category..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="search-input"
+                />
+              </div>
+
+              <div className="sorting-container">
+                <span className="results-count-text">
+                  Showing all {filteredProducts.length} results
+                </span>
+                <select 
+                  className="sorting-select"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  aria-label="Sort products"
+                >
+                  <option value="default">Default sorting</option>
+                  <option value="popularity">Sort by popularity</option>
+                  <option value="rating">Sort by average rating</option>
+                  <option value="latest">Sort by latest</option>
+                  <option value="price-low">Sort by price: low to high</option>
+                  <option value="price-high">Sort by price: high to low</option>
+                </select>
+              </div>
             </div>
 
-            {/* Products Grid */}
+            {/* Products Grid with 5 Exact Products */}
             <div className="products-grid">
               {filteredProducts.map((prod) => (
                 <div key={prod.id} className="product-card">
@@ -367,27 +396,46 @@ export default function App() {
                     <span className="product-badge">{prod.categoryName}</span>
                   </div>
                   <div className="product-body">
-                    <div className="product-sku">SKU: {prod.sku}</div>
-                    <h3 className="product-title">{prod.name}</h3>
-                    <div className="product-meta">
-                      <div className="meta-row">
-                        <span>📦 <strong>Pack:</strong> {prod.packSize}</span>
-                      </div>
-                      <div className="meta-row">
-                        <span>📋 <strong>Min Order:</strong> {prod.minOrder}</span>
-                      </div>
-                      <div className="meta-row">
-                        <span className="stock-tag">● {prod.availability}</span>
-                      </div>
+                    <div className="product-header-row">
+                      <span className="product-sku">SKU: {prod.sku}</span>
+                      <span className="stock-tag">● {prod.availability}</span>
                     </div>
-                    <div className="product-footer">
-                      <span className="product-pricing-note">{prod.priceNote}</span>
+                    
+                    <h3 className="product-title">
+                      <a 
+                        href={prod.url} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="product-title-link"
+                      >
+                        {prod.name}
+                      </a>
+                    </h3>
+
+                    <div className="product-price-box">
+                      <span className="product-price-val">{prod.price}</span>
+                      <span className="product-price-sub">Wholesale Tiered</span>
+                    </div>
+
+                    <p className="product-excerpt">{prod.description}</p>
+
+                    <div className="product-actions-row">
                       <button 
-                        className="btn-quote"
+                        className="btn-add-cart"
                         onClick={() => handleOpenQuote(prod)}
                       >
-                        Request Quote
+                        <ShoppingCart size={15} />
+                        <span>Add to cart</span>
                       </button>
+                      <a 
+                        href={prod.url} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        className="btn-view-live"
+                        title="View on official store"
+                      >
+                        <ExternalLink size={15} />
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -407,148 +455,168 @@ export default function App() {
             )}
           </section>
 
-          {/* VALUE PROPOSITION / TRUST SIGNALS */}
-          <section className="section-wrapper" style={{ paddingTop: '20px' }}>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-              gap: '24px',
-              background: '#ffffff',
-              padding: '36px',
-              borderRadius: '20px',
-              border: '1px solid #e2e8f0',
-              boxShadow: '0 4px 15px rgba(0,0,0,0.03)'
-            }}>
-              <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-                <div style={{ background: '#e6f4f8', padding: '12px', borderRadius: '12px', color: '#1e7087' }}>
-                  <ShieldCheck size={28} />
+          {/* AUTHENTIC CORPORATE PROFILE & DIRECT TRADING DESK (ANTI-AI REDESIGN) */}
+          <section className="corporate-profile-section">
+            <div className="corporate-profile-container">
+              
+              {/* Left Column: Official Corporate Ledger & Credentials */}
+              <div className="corporate-credentials-col">
+                <div className="corp-section-eyebrow">
+                  <span className="corp-dot"></span>
+                  CORPORATE ENTITY & GLOBAL DISTRIBUTION INFRASTRUCTURE
                 </div>
-                <div>
-                  <h4 style={{ fontWeight: '700', fontSize: '1.05rem', marginBottom: '4px' }}>Authentic & Verified</h4>
-                  <p style={{ color: '#64748b', fontSize: '0.88rem' }}>100% manufacturer verified products directly sourced from verified brands.</p>
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-                <div style={{ background: '#e6f4f8', padding: '12px', borderRadius: '12px', color: '#1e7087' }}>
-                  <Truck size={28} />
-                </div>
-                <div>
-                  <h4 style={{ fontWeight: '700', fontSize: '1.05rem', marginBottom: '4px' }}>Global Logistics</h4>
-                  <p style={{ color: '#64748b', fontSize: '0.88rem' }}>Seamless LTL, FTL, and container shipping across USA, Middle East, and beyond.</p>
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-                <div style={{ background: '#e6f4f8', padding: '12px', borderRadius: '12px', color: '#1e7087' }}>
-                  <Award size={28} />
-                </div>
-                <div>
-                  <h4 style={{ fontWeight: '700', fontSize: '1.05rem', marginBottom: '4px' }}>B2B Wholesale Tiers</h4>
-                  <p style={{ color: '#64748b', fontSize: '0.88rem' }}>Tailored tiered pricing, net payment terms, and dedicated wholesale managers.</p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* ABOUT & CONTACT PREVIEW */}
-          <section className="about-section">
-            <div className="about-grid">
-              <div>
-                <span className="about-card-badge">About Abeer Trading Company LLC</span>
-                <h2 className="about-title">Dedicated to Excellence in Global Trade & Distribution</h2>
-                <p className="about-text">
-                  Owned and operated by <strong>Tahir Mehmood</strong>, ABEER TRADING COMPANY LLC is built on long-lasting relationships with retailers, distributors, and institutional clients. We specialize in sourcing high-velocity consumer goods, personal care, household essentials, and commercial cleaning supplies.
+                
+                <h2 className="corp-headline">
+                  Dedicated to Excellence in Global Trade & Distribution
+                </h2>
+                
+                <p className="corp-lead-text">
+                  Owned and directed by <strong>Tahir Mehmood</strong>, <strong>ABEER TRADING COMPANY LLC</strong> is a registered commercial wholesale and global trade enterprise headquartered in Sheridan, Wyoming, USA. We bridge verified manufacturers and international brand sources with retail chains, regional distributors, and institutional organizations worldwide.
                 </p>
-                <div className="about-highlights">
-                  <div className="highlight-item">
-                    <h4>Direct Procurement</h4>
-                    <p>Transparent supply chain with strict lot tracking.</p>
+
+                {/* Structured Verification Ledger */}
+                <div className="corp-ledger">
+                  <div className="corp-ledger-row">
+                    <span className="ledger-label">Registered Legal Entity</span>
+                    <div className="ledger-val-group">
+                      <strong>ABEER TRADING COMPANY LLC</strong>
+                      <span className="ledger-sub">State of Wyoming • Registered Domestic Entity ID # 68479</span>
+                    </div>
                   </div>
-                  <div className="highlight-item">
-                    <h4>Flexible MOQs</h4>
-                    <p>Catering to both growing distributors and enterprise chains.</p>
+
+                  <div className="corp-ledger-row">
+                    <span className="ledger-label">Principal Leadership</span>
+                    <div className="ledger-val-group">
+                      <strong>Tahir Mehmood</strong>
+                      <span className="ledger-sub">Owner & Managing Director</span>
+                    </div>
                   </div>
-                  <div className="highlight-item">
-                    <h4>Prompt Fulfillment</h4>
-                    <p>Fast dispatch from modern strategically placed warehouses.</p>
+
+                  <div className="corp-ledger-row">
+                    <span className="ledger-label">Registered U.S. Office</span>
+                    <div className="ledger-val-group">
+                      <span>30 N Gould St # 68479 Sheridan, WY 82801, United States</span>
+                    </div>
                   </div>
-                  <div className="highlight-item">
-                    <h4>US Headquartered</h4>
-                    <p>30 N Gould St # 68479 Sheridan, WY 82801</p>
+
+                  <div className="corp-ledger-row">
+                    <span className="ledger-label">Operational Desks</span>
+                    <div className="ledger-val-group">
+                      <span><strong>United States</strong> (Domestic Freight) • <strong>Middle East / KSA</strong> (Direct Trading Desk)</span>
+                    </div>
+                  </div>
+
+                  <div className="corp-ledger-row">
+                    <span className="ledger-label">Wholesale Portfolio</span>
+                    <div className="ledger-val-group">
+                      <span>Everyday Essentials • Beauty & Health • Home & Office • Commercial Cleaning • Pantry</span>
+                    </div>
+                  </div>
+
+                  <div className="corp-ledger-row">
+                    <span className="ledger-label">Procurement Standard</span>
+                    <div className="ledger-val-group">
+                      <span>Strict manufacturer lot tracking, transparent chain of custody, flexible MOQs, prompt multi-carrier dispatch.</span>
+                    </div>
                   </div>
                 </div>
-                <button 
-                  className="btn-hero-primary"
-                  onClick={() => navigateTo('about')}
-                >
-                  Learn More About Us
-                </button>
+
+                <div className="corp-actions-row">
+                  <button 
+                    className="btn-corp-primary"
+                    onClick={() => navigateTo('about')}
+                  >
+                    <span>Read Company Overview</span>
+                    <ArrowRight size={16} />
+                  </button>
+                  <button 
+                    className="btn-corp-outline"
+                    onClick={() => navigateTo('business')}
+                  >
+                    <span>Our Business Model</span>
+                  </button>
+                </div>
               </div>
 
-              <div className="about-contact-box">
-                <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.8 }}>Get in Touch Directly</span>
-                <h3 style={{ marginTop: '8px' }}>Wholesale Inquiries & Quotes</h3>
-                <p style={{ opacity: 0.9, fontSize: '0.92rem', lineHeight: 1.6 }}>
+              {/* Right Column: Executive Trading & Procurement Desk */}
+              <div className="corporate-trade-desk">
+                <div className="trade-desk-badge-strip">
+                  <span className="trade-desk-status">
+                    <span className="pulse-indicator"></span> Direct Trading Desk Active
+                  </span>
+                  <span className="trade-desk-id">WY LLC #68479</span>
+                </div>
+
+                <h3 className="trade-desk-title">Wholesale Inquiries & Quotes</h3>
+                
+                <p className="trade-desk-desc">
                   Connect with our executive trading desk for custom pricing quotes, catalog distribution, or supplier collaboration.
                 </p>
-                <ul className="contact-info-list">
-                  <li>
-                    <Phone size={18} color="#a5f3fc" />
-                    <div>
-                      <div>Primary: <a href="tel:+966547035184">(+966) 547035184</a></div>
-                      <div>US Office: <a href="tel:+16615770052">+1 661-577-0052</a></div>
+
+                <div className="trade-desk-contacts">
+                  <a href="tel:+966547035184" className="trade-contact-item">
+                    <div className="contact-icon-box">
+                      <Phone size={18} />
                     </div>
-                  </li>
-                  <li>
-                    <Mail size={18} color="#a5f3fc" />
-                    <div>
-                      <div>Direct Email: <a href="mailto:Abeer.tahir2025@gmail.com">Abeer.tahir2025@gmail.com</a></div>
+                    <div className="contact-details">
+                      <span className="contact-role">Primary Trading Desk (Direct / WhatsApp)</span>
+                      <strong className="contact-val">(+966) 547035184</strong>
                     </div>
-                  </li>
-                  <li>
-                    <MapPin size={18} color="#a5f3fc" />
-                    <div>
-                      <div><strong>30 N Gould St # 68479 Sheridan, WY 82801</strong></div>
-                      <div style={{ opacity: 0.8, fontSize: '0.85rem' }}>Managed by Tahir Mehmood • USA & Global Distribution</div>
+                  </a>
+
+                  <a href="tel:+16615770052" className="trade-contact-item">
+                    <div className="contact-icon-box">
+                      <Building2 size={18} />
                     </div>
-                  </li>
-                </ul>
-                <div style={{ marginTop: '28px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    <div className="contact-details">
+                      <span className="contact-role">United States Office Support</span>
+                      <strong className="contact-val">+1 661-577-0052</strong>
+                    </div>
+                  </a>
+
+                  <a href="mailto:Abeer.tahir2025@gmail.com" className="trade-contact-item">
+                    <div className="contact-icon-box">
+                      <Mail size={18} />
+                    </div>
+                    <div className="contact-details">
+                      <span className="contact-role">Direct Executive Email</span>
+                      <strong className="contact-val">Abeer.tahir2025@gmail.com</strong>
+                    </div>
+                  </a>
+
+                  <div className="trade-contact-item static">
+                    <div className="contact-icon-box">
+                      <MapPin size={18} />
+                    </div>
+                    <div className="contact-details">
+                      <span className="contact-role">Corporate Registered Address</span>
+                      <strong className="contact-val">30 N Gould St # 68479 Sheridan, WY 82801</strong>
+                      <span className="contact-note">Managed by Tahir Mehmood • USA & Global Distribution</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="trade-desk-cta-group">
                   <a 
                     href="https://wa.me/966547035184" 
                     target="_blank" 
                     rel="noreferrer"
-                    style={{
-                      background: '#25D366',
-                      color: '#ffffff',
-                      textDecoration: 'none',
-                      padding: '10px 20px',
-                      borderRadius: '30px',
-                      fontWeight: '600',
-                      fontSize: '0.9rem',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}
+                    className="btn-trade-whatsapp"
                   >
-                    Chat on WhatsApp
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                      <path d="M12.031 2C6.494 2 2 6.494 2 12.031c0 1.95.558 3.771 1.523 5.319L2.094 22l4.802-1.408a10.02 10.02 0 0 0 5.135 1.44c5.537 0 10.031-4.494 10.031-10.031S17.568 2 12.031 2zm5.727 14.152c-.24.673-1.393 1.282-1.922 1.346-.51.063-1.168.089-3.743-.977-3.136-1.298-5.14-4.524-5.297-4.733-.153-.209-1.264-1.684-1.264-3.213s.801-2.28 1.086-2.585c.285-.306.621-.382.828-.382.207 0 .414.002.595.011.192.01.448-.073.701.536.262.632.894 2.181.972 2.34.078.158.13.344.026.552-.104.209-.156.338-.311.52-.156.182-.328.406-.468.545-.156.155-.319.324-.137.636.182.312.81 1.336 1.737 2.161 1.192 1.062 2.196 1.391 2.508 1.547.312.156.494.13.676-.078.182-.208.78-.909.988-1.221.208-.312.416-.26.697-.156.281.104 1.79.845 2.099 1 .309.155.515.234.59.364.075.13.075.754-.165 1.427z"/>
+                    </svg>
+                    <span>Chat on WhatsApp (+966)</span>
                   </a>
                   <button 
                     onClick={() => handleOpenPartner('partner')}
-                    style={{
-                      background: 'rgba(255,255,255,0.15)',
-                      color: '#ffffff',
-                      border: '1px solid rgba(255,255,255,0.4)',
-                      padding: '10px 20px',
-                      borderRadius: '30px',
-                      fontWeight: '600',
-                      fontSize: '0.9rem',
-                      cursor: 'pointer'
-                    }}
+                    className="btn-trade-rfq"
                   >
-                    Submit RFQ Form
+                    <span>Submit RFQ Form</span>
                   </button>
                 </div>
               </div>
+
             </div>
           </section>
         </main>

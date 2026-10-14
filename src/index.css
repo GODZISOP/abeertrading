@@ -593,136 +593,468 @@ body {
   justify-content: space-between;
 }
 
-.product-pricing-note {
-  font-size: 0.78rem;
+.product-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.product-title-link {
+  color: #0f172a;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.product-title-link:hover {
   color: #1e7087;
+}
+
+.product-price-box {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 6px 0 8px 0;
+}
+
+.product-price-val {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f2a3a;
+}
+
+.product-price-sub {
+  font-size: 0.74rem;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.product-excerpt {
+  font-size: 0.82rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin-bottom: 14px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-actions-row {
+  margin-top: auto;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-add-cart {
+  flex-grow: 1;
+  background: #0f2a3a;
+  color: #ffffff;
+  border: none;
+  padding: 9px 14px;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-add-cart:hover {
+  background: #1e7087;
+}
+
+.btn-view-live {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  padding: 9px 11px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.btn-view-live:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* Catalog Controls Toolbar */
+.catalog-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.sorting-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.results-count-text {
+  font-size: 0.88rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.sorting-select {
+  padding: 8px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #334155;
+  font-size: 0.88rem;
+  cursor: pointer;
+  outline: none;
+  font-weight: 500;
+}
+
+.sorting-select:focus {
+  border-color: #1e7087;
+}
+
+/* ========================================================
+   OFFICIAL CORPORATE PROFILE & TRADE OPERATIONS (ANTI-AI)
+   ======================================================== */
+.corporate-profile-section {
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 80px 24px;
+}
+
+.corporate-profile-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 48px;
+  align-items: start;
+}
+
+/* Left Column: Official Corporate Credentials */
+.corporate-credentials-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.corp-section-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #0d9488;
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.corp-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #0d9488;
+  display: inline-block;
+}
+
+.corp-headline {
+  font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.22;
+  margin-bottom: 18px;
+  letter-spacing: -0.02em;
+}
+
+.corp-lead-text {
+  font-size: 0.98rem;
+  line-height: 1.7;
+  color: #475569;
+  margin-bottom: 28px;
+}
+
+/* Structured Verification Ledger Table */
+.corp-ledger {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+  margin-bottom: 28px;
+}
+
+.corp-ledger-row {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  padding: 14px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.88rem;
+  align-items: baseline;
+}
+
+.corp-ledger-row:last-child {
+  border-bottom: none;
+}
+
+.ledger-label {
+  font-weight: 600;
+  color: #64748b;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ledger-val-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: #0f172a;
+}
+
+.ledger-val-group strong {
+  color: #0f2a3a;
   font-weight: 600;
 }
 
-.btn-quote {
-  background: #f1f5f9;
-  color: #0f2a3a;
-  border: 1px solid #cbd5e1;
-  padding: 7px 14px;
+.ledger-sub {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.corp-actions-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.btn-corp-primary {
+  background: #0f2a3a;
+  color: #ffffff;
+  border: none;
+  padding: 12px 22px;
   border-radius: 8px;
-  font-size: 0.82rem;
   font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-corp-primary:hover {
+  background: #1e7087;
+  transform: translateY(-1px);
+}
+
+.btn-corp-outline {
+  background: transparent;
+  color: #0f2a3a;
+  border: 1.5px solid #cbd5e1;
+  padding: 12px 22px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.btn-quote:hover {
-  background: var(--accent-teal);
+.btn-corp-outline:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+/* Right Column: Executive Trading & Inquiries Desk */
+.corporate-trade-desk {
+  background: #0b1e2d;
   color: #ffffff;
-  border-color: var(--accent-teal);
+  border-radius: 16px;
+  padding: 34px 30px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 16px 36px rgba(11, 30, 45, 0.2);
+  position: relative;
 }
 
-/* ABOUT / COMPANY SECTION */
-.about-section {
-  background: #ffffff;
-  border-top: 1px solid #e2e8f0;
-  border-bottom: 1px solid #e2e8f0;
-  padding: 70px 24px;
-}
-
-.about-grid {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 48px;
+.trade-desk-badge-strip {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.about-card-badge {
+.trade-desk-status {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: #e6f4f8;
-  color: var(--accent-teal);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #4ade80;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.pulse-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.25);
+}
+
+.trade-desk-id {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  letter-spacing: 0.06em;
+  font-family: monospace;
+}
+
+.trade-desk-title {
+  font-size: 1.45rem;
   font-weight: 700;
-  font-size: 0.8rem;
-  padding: 6px 14px;
-  border-radius: 20px;
-  margin-bottom: 16px;
-}
-
-.about-title {
-  font-family: var(--font-serif);
-  font-size: 2.2rem;
-  color: var(--primary-navy);
-  margin-bottom: 18px;
-  line-height: 1.25;
-}
-
-.about-text {
-  color: #475569;
-  font-size: 0.96rem;
-  line-height: 1.7;
-  margin-bottom: 24px;
-}
-
-.about-highlights {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.highlight-item {
-  background: #f8fafc;
-  padding: 14px 18px;
-  border-radius: 12px;
-  border-left: 3px solid var(--accent-teal);
-}
-
-.highlight-item h4 {
-  font-size: 0.95rem;
-  color: var(--primary-navy);
-  margin-bottom: 4px;
-}
-
-.highlight-item p {
-  font-size: 0.82rem;
-  color: #64748b;
-}
-
-.about-contact-box {
-  background: linear-gradient(135deg, #102a3a 0%, #1a5668 100%);
   color: #ffffff;
-  padding: 36px;
-  border-radius: 20px;
-  box-shadow: 0 12px 30px rgba(16, 42, 58, 0.15);
+  margin-bottom: 10px;
+  letter-spacing: -0.01em;
 }
 
-.about-contact-box h3 {
-  font-family: var(--font-serif);
-  font-size: 1.5rem;
-  margin-bottom: 12px;
+.trade-desk-desc {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: #cbd5e1;
+  margin-bottom: 24px;
 }
 
-.contact-info-list {
-  list-style: none;
-  margin-top: 20px;
+.trade-desk-contacts {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
+  margin-bottom: 28px;
 }
 
-.contact-info-list li {
+.trade-contact-item {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  font-size: 0.92rem;
-}
-
-.contact-info-list li a {
-  color: #a5f3fc;
+  gap: 14px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
   text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
 }
 
-.contact-info-list li a:hover {
-  text-decoration: underline;
+.trade-contact-item:not(.static):hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateX(2px);
+}
+
+.contact-icon-box {
+  background: rgba(14, 165, 233, 0.15);
+  color: #38bdf8;
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.contact-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.contact-role {
+  font-size: 0.74rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+.contact-val {
+  font-size: 0.95rem;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.contact-note {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.trade-desk-cta-group {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-trade-whatsapp {
+  background: #25D366;
+  color: #ffffff;
+  text-decoration: none;
+  padding: 11px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-trade-whatsapp:hover {
+  background: #20ba59;
+  transform: translateY(-1px);
+}
+
+.btn-trade-rfq {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 11px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-trade-rfq:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 900px) {
+  .corporate-profile-container {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+  .corp-ledger-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
 }
 
 /* FOOTER */
