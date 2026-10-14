@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Phone, Mail, MapPin, Search, ArrowRight, CheckCircle2, 
   Send, ExternalLink, ShieldCheck, Truck, Award,
-  X, MessageSquare, Layers, Building2, ShoppingCart, Menu as MenuIcon
+  X, MessageSquare, Layers, Building2, ShoppingCart, Menu as MenuIcon,
+  Plus, Minus, Trash2, ShoppingBag, Eye, ArrowLeft, Check
 } from 'lucide-react';
 import { categories, products } from './data/products';
 import logoImg from './images/image.png';
@@ -12,12 +13,34 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('default');
-  const [modalType, setModalType] = useState(null); // 'partner', 'quote', 'supplier', null
+  const [modalType, setModalType] = useState(null); // 'partner', 'quote', 'supplier', 'checkout', null
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterSuccess, setNewsletterSuccess] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
+
+  // Cart & Product Detail state
+  const [cart, setCart] = useState(() => {
+    try {
+      const saved = localStorage.getItem('atc_cart');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+  const [cartOpen, setCartOpen] = useState(false);
+  const [activeProduct, setActiveProduct] = useState(products[0]);
+  const [detailQuantity, setDetailQuantity] = useState(1);
+  const [activeDetailTab, setActiveDetailTab] = useState('description');
+  const [toastMessage, setToastMessage] = useState(null);
+
+  // Sync cart to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('atc_cart', JSON.stringify(cart));
+    } catch (e) {}
+  }, [cart]);
 
   // Filter & sort products
   const filteredProducts = products.filter(item => {
@@ -33,6 +56,63 @@ export default function App() {
     if (sortBy === 'latest') return b.id - a.id;
     return 0;
   });
+
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 3200);
+  };
+
+  const addToCart = (product, qty = 1, openDrawer = true) => {
+    setCart(prev => {
+      const existing = prev.find(item => item.product.id === product.id);
+      if (existing) {
+        return prev.map(item => 
+          item.product.id === product.id 
+            ? { ...item, quantity: item.quantity + qty }
+            : item
+        );
+      }
+      return [...prev, { product, quantity: qty }];
+    });
+    showToast(`Added ${qty}x ${product.name} to cart!`);
+    if (openDrawer) {
+      setCartOpen(true);
+    }
+  };
+
+  const updateCartQuantity = (productId, delta) => {
+    setCart(prev => {
+      return prev.map(item => {
+        if (item.product.id === productId) {
+          const newQty = item.quantity + delta;
+          return newQty > 0 ? { ...item, quantity: newQty } : null;
+        }
+        return item;
+      }).filter(Boolean);
+    });
+  };
+
+  const removeFromCart = (productId) => {
+    setCart(prev => prev.filter(item => item.product.id !== productId));
+  };
+
+  const clearCart = () => {
+    setCart([]);
+  };
+
+  const totalCartItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const cartSubtotal = cart.reduce((sum, item) => sum + (item.product.priceNumeric * item.quantity), 0);
+
+  const viewProductDetail = (product) => {
+    setActiveProduct(product);
+    setDetailQuantity(1);
+    setActiveDetailTab('description');
+    setActiveTab('product-detail');
+    setMobileMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleOpenQuote = (product) => {
     setSelectedProduct(product);
@@ -190,6 +270,18 @@ export default function App() {
 
         <div className="nav-actions">
           <button 
+            className="btn-nav-cart"
+            onClick={() => setCartOpen(true)}
+            aria-label="Open Shopping Cart"
+          >
+            <ShoppingCart size={18} />
+            <span className="nav-cart-text">Cart</span>
+            {totalCartItems > 0 && (
+              <span className="nav-cart-badge">{totalCartItems}</span>
+            )}
+          </button>
+
+          <button 
             className="btn-nav-partner"
             onClick={() => handleOpenPartner('partner')}
           >
@@ -223,6 +315,31 @@ export default function App() {
           flexDirection: 'column',
           gap: '12px'
         }}>
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false);
+              setCartOpen(true);
+            }}
+            style={{
+              textAlign: 'left',
+              padding: '10px 14px',
+              background: '#e6f4f8',
+              color: '#1e7087',
+              border: 'none',
+              borderRadius: '8px',
+              fontWeight: '600',
+              fontSize: '0.95rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <ShoppingCart size={18} />
+              <span>Shopping Cart</span>
+            </span>
+            <span className="nav-cart-badge">{totalCartItems}</span>
+          </button>
           {['home', 'about', 'business', 'categories', 'partnerships', 'supplier', 'contact'].map(key => (
             <button
               key={key}
@@ -256,7 +373,7 @@ export default function App() {
                 <div className="hero-pretitle">Abeer Trading Company llc</div>
                 <h1 className="hero-title">Wholesale, Sourced Thoughtfully</h1>
                 <p className="hero-description">
-                  ABEER TRADING COMPANY LLC is owned and managed by Tahir Mehmood, providing customers with professional trading services. For business inquiries, please contact us at +1 661-577-0052 or email Abeer.tahir2025@gmail.com. Visit our official website at <strong>https://abeertradingcompanyllc.com</strong> for more information about our company and services.
+                  ABEER TRADING COMPANY LLC is owned and managed by Tahir Mehmood, providing institutional and retail partners with verified wholesale sourcing, certified procurement, and cross-border distribution. For direct commercial inquiries, contact our executive trade desk at (+966) 547035184 or email Abeer.tahir2025@gmail.com.
                 </p>
                 <div className="hero-actions">
                   <button 
@@ -391,7 +508,11 @@ export default function App() {
             <div className="products-grid">
               {filteredProducts.map((prod) => (
                 <div key={prod.id} className="product-card">
-                  <div className="product-img-wrap">
+                  <div 
+                    className="product-img-wrap"
+                    onClick={() => viewProductDetail(prod)}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <img src={prod.image} alt={prod.name} className="product-img" loading="lazy" />
                     <span className="product-badge">{prod.categoryName}</span>
                   </div>
@@ -402,14 +523,12 @@ export default function App() {
                     </div>
                     
                     <h3 className="product-title">
-                      <a 
-                        href={prod.url} 
-                        target="_blank" 
-                        rel="noreferrer"
-                        className="product-title-link"
+                      <button 
+                        onClick={() => viewProductDetail(prod)}
+                        className="product-title-btn"
                       >
                         {prod.name}
-                      </a>
+                      </button>
                     </h3>
 
                     <div className="product-price-box">
@@ -422,20 +541,25 @@ export default function App() {
                     <div className="product-actions-row">
                       <button 
                         className="btn-add-cart"
-                        onClick={() => handleOpenQuote(prod)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addToCart(prod, 1, true);
+                        }}
                       >
                         <ShoppingCart size={15} />
                         <span>Add to cart</span>
                       </button>
-                      <a 
-                        href={prod.url} 
-                        target="_blank" 
-                        rel="noreferrer" 
-                        className="btn-view-live"
-                        title="View on official store"
+                      <button 
+                        className="btn-view-details"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          viewProductDetail(prod);
+                        }}
+                        title="View Full Specifications & Details"
                       >
-                        <ExternalLink size={15} />
-                      </a>
+                        <Eye size={15} />
+                        <span>View Details</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -620,6 +744,380 @@ export default function App() {
             </div>
           </section>
         </main>
+      )}
+
+      {/* VIEW: PRODUCT DETAIL PAGE */}
+      {activeTab === 'product-detail' && activeProduct && (
+        <div className="product-detail-page">
+          <div className="detail-container">
+            
+            {/* Top Breadcrumbs & Back Button */}
+            <div className="detail-top-nav">
+              <button 
+                className="btn-back-catalog" 
+                onClick={() => navigateTo('home')}
+              >
+                <ArrowLeft size={16} />
+                <span>Back to Wholesale Catalog</span>
+              </button>
+              <div className="detail-breadcrumbs">
+                <span onClick={() => navigateTo('home')} className="crumb-link">Home</span>
+                <span className="crumb-sep">/</span>
+                <span 
+                  onClick={() => { setSelectedCategory(activeProduct.category); navigateTo('home'); }} 
+                  className="crumb-link"
+                >
+                  {activeProduct.categoryName}
+                </span>
+                <span className="crumb-sep">/</span>
+                <span className="crumb-current">{activeProduct.name}</span>
+              </div>
+            </div>
+
+            {/* Main Product Showcase Grid */}
+            <div className="detail-showcase-grid">
+              
+              {/* Left Column: Visual Showcase & Quality Badges */}
+              <div className="detail-gallery-col">
+                <div className="detail-img-card">
+                  <img 
+                    src={activeProduct.image} 
+                    alt={activeProduct.name} 
+                    className="detail-hero-img" 
+                  />
+                  <div className="detail-badge-float">{activeProduct.categoryName}</div>
+                  <div className="detail-verified-badge">
+                    <ShieldCheck size={16} />
+                    <span>100% Genuine Wholesale Batch</span>
+                  </div>
+                </div>
+
+                {/* Quality & Assurance Badges */}
+                <div className="detail-assurance-strip">
+                  <div className="assurance-item">
+                    <Truck size={18} className="assurance-icon" />
+                    <div>
+                      <strong>Fast B2B Dispatch</strong>
+                      <span>Dispatched via Sheridan, WY & KSA Trade Hubs</span>
+                    </div>
+                  </div>
+                  <div className="assurance-item">
+                    <Award size={18} className="assurance-icon" />
+                    <div>
+                      <strong>Quality Inspected</strong>
+                      <span>Verified under Tahir Mehmood management</span>
+                    </div>
+                  </div>
+                  <div className="assurance-item">
+                    <Building2 size={18} className="assurance-icon" />
+                    <div>
+                      <strong>Wyoming LLC Registered</strong>
+                      <span>Official Corporate Wholesale Entity #68479</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Commercial Product Information & Add to Cart */}
+              <div className="detail-info-col">
+                <div className="detail-meta-row">
+                  <span className="detail-sku-badge">SKU: {activeProduct.sku}</span>
+                  <span className="detail-stock-badge">
+                    <span className="stock-pulsing-dot"></span>
+                    {activeProduct.availability} ({activeProduct.stockUnits?.toLocaleString() || '1,000+'} units available)
+                  </span>
+                </div>
+
+                <h1 className="detail-product-title">{activeProduct.name}</h1>
+
+                <div className="detail-reviews-row">
+                  <div className="star-rating">★★★★★</div>
+                  <span className="rating-score">{activeProduct.rating}</span>
+                  <span className="review-count">({activeProduct.reviewCount || 35} verified B2B partner reviews)</span>
+                </div>
+
+                <div className="detail-price-panel">
+                  <div className="detail-price-row">
+                    <div className="detail-unit-price">
+                      <span className="price-currency">{activeProduct.price}</span>
+                      <span className="price-per">/ unit</span>
+                    </div>
+                    <div className="detail-price-note">
+                      <span className="tax-tag">Wholesale Net</span>
+                      <span>{activeProduct.priceNote}</span>
+                    </div>
+                  </div>
+                  <div className="detail-moq-row">
+                    <span>Minimum Wholesale Order (MOQ):</span>
+                    <strong>{activeProduct.minOrder}</strong>
+                  </div>
+                </div>
+
+                {/* Wholesale Volume Tier Table */}
+                {activeProduct.tiers && activeProduct.tiers.length > 0 && (
+                  <div className="wholesale-tiers-box">
+                    <div className="tiers-title">Wholesale Volume Pricing Tiers:</div>
+                    <div className="tiers-grid">
+                      {activeProduct.tiers.map((tier, idx) => (
+                        <div key={idx} className="tier-card">
+                          <div className="tier-qty">{tier.range}</div>
+                          <div className="tier-price">{tier.price} <small>/ unit</small></div>
+                          <div className="tier-discount">{tier.discount}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <p className="detail-lead-summary">{activeProduct.description}</p>
+
+                {/* Key Features Bullet Points */}
+                {activeProduct.features && (
+                  <div className="detail-features-box">
+                    <h3 className="features-title">Product Highlights:</h3>
+                    <ul className="features-list">
+                      {activeProduct.features.map((feat, idx) => (
+                        <li key={idx}>
+                          <Check size={16} className="feature-check" />
+                          <span>{feat}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Purchase & Cart Actions */}
+                <div className="detail-purchase-panel">
+                  <div className="qty-row">
+                    <label className="qty-label">Wholesale Quantity:</label>
+                    <div className="qty-stepper">
+                      <button 
+                        type="button" 
+                        className="stepper-btn"
+                        onClick={() => setDetailQuantity(q => Math.max(1, q - 1))}
+                      >
+                        <Minus size={16} />
+                      </button>
+                      <input 
+                        type="number" 
+                        min="1" 
+                        value={detailQuantity} 
+                        onChange={(e) => setDetailQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                        className="stepper-input"
+                      />
+                      <button 
+                        type="button" 
+                        className="stepper-btn"
+                        onClick={() => setDetailQuantity(q => q + 1)}
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </div>
+
+                    <div className="subtotal-preview">
+                      Subtotal: <strong>₨ {(activeProduct.priceNumeric * detailQuantity).toLocaleString()}</strong>
+                    </div>
+                  </div>
+
+                  <div className="detail-actions-grid">
+                    <button 
+                      className="btn-detail-add-cart"
+                      onClick={() => addToCart(activeProduct, detailQuantity, true)}
+                    >
+                      <ShoppingCart size={18} />
+                      <span>Add to Cart ({detailQuantity} Units)</span>
+                    </button>
+
+                    <a 
+                      href={`https://wa.me/966547035184?text=${encodeURIComponent(`Hello Tahir Mehmood, I want to order ${detailQuantity}x ${activeProduct.name} (SKU: ${activeProduct.sku}, Total: ₨ ${(activeProduct.priceNumeric * detailQuantity).toLocaleString()}) from Abeer Trading Company LLC.`)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn-detail-whatsapp"
+                    >
+                      <MessageSquare size={18} />
+                      <span>WhatsApp Direct Order</span>
+                    </a>
+                  </div>
+
+                  <div className="detail-secondary-actions">
+                    <button 
+                      className="btn-detail-rfq"
+                      onClick={() => handleOpenQuote(activeProduct)}
+                    >
+                      <span>Request Formal Wholesale Quote / Invoice</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Contact Help Strip */}
+                <div className="detail-help-strip">
+                  <span>Questions about bulk orders?</span>
+                  <a href="tel:+966547035184" className="help-link">
+                    <Phone size={14} /> (+966) 547035184
+                  </a>
+                  <span className="sep">•</span>
+                  <a href="mailto:Abeer.tahir2025@gmail.com" className="help-link">
+                    <Mail size={14} /> Abeer.tahir2025@gmail.com
+                  </a>
+                </div>
+
+              </div>
+            </div>
+
+            {/* Tabbed Detailed Specifications */}
+            <div className="detail-tabs-section">
+              <div className="detail-tabs-header">
+                <button 
+                  className={`detail-tab-btn ${activeDetailTab === 'description' ? 'active' : ''}`}
+                  onClick={() => setActiveDetailTab('description')}
+                >
+                  Product Details & Overview
+                </button>
+                <button 
+                  className={`detail-tab-btn ${activeDetailTab === 'specs' ? 'active' : ''}`}
+                  onClick={() => setActiveDetailTab('specs')}
+                >
+                  Technical Specifications & Packaging
+                </button>
+                <button 
+                  className={`detail-tab-btn ${activeDetailTab === 'shipping' ? 'active' : ''}`}
+                  onClick={() => setActiveDetailTab('shipping')}
+                >
+                  Wholesale Logistics & Terms
+                </button>
+              </div>
+
+              <div className="detail-tab-content">
+                {activeDetailTab === 'description' && (
+                  <div className="tab-pane">
+                    <h3 className="tab-title">Product Description</h3>
+                    <p className="tab-lead-text">{activeProduct.longDescription || activeProduct.description}</p>
+                    <div className="tab-features-grid">
+                      <div className="tab-feature-card">
+                        <h4>Commercial Quality Standard</h4>
+                        <p>Specially manufactured and selected for sustained commercial and retail performance, offering high durability and verified consumer satisfaction.</p>
+                      </div>
+                      <div className="tab-feature-card">
+                        <h4>Packaging & Presentation</h4>
+                        <p>All units come in shelf-ready retail packaging with standard barcoding, regulatory ingredient/material markings, and protective outer wrap.</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeDetailTab === 'specs' && (
+                  <div className="tab-pane">
+                    <h3 className="tab-title">Technical Specifications & Dimensions</h3>
+                    {activeProduct.specs && activeProduct.specs.length > 0 ? (
+                      <table className="specs-table">
+                        <tbody>
+                          {activeProduct.specs.map((item, idx) => (
+                            <tr key={idx}>
+                              <td className="spec-label">{item.label}</td>
+                              <td className="spec-value">{item.value}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    ) : (
+                      <p>Standard export specifications apply. Contact our desk for complete COA / spec sheets.</p>
+                    )}
+                  </div>
+                )}
+
+                {activeDetailTab === 'shipping' && (
+                  <div className="tab-pane">
+                    <h3 className="tab-title">Wholesale Logistics & Dispatch Terms</h3>
+                    <div className="shipping-info-grid">
+                      <div className="ship-card">
+                        <h4>Order Processing & Lead Time</h4>
+                        <p>Orders are dispatched within 24 to 48 business hours upon confirmation. Tracking numbers and freight waybills are provided immediately.</p>
+                      </div>
+                      <div className="ship-card">
+                        <h4>Shipping Hubs & Carriers</h4>
+                        <p>Dispatched from our primary registered facilities at Sheridan, Wyoming (US domestic & North America) and our Middle East trade hub in KSA.</p>
+                      </div>
+                      <div className="ship-card">
+                        <h4>Pallet & Container Loads</h4>
+                        <p>Full Container Load (FCL) and Less than Container Load (LCL) consolidation available for cross-border wholesale buyers.</p>
+                      </div>
+                      <div className="ship-card">
+                        <h4>Payment Methods</h4>
+                        <p>We accept Wire Transfer (T/T), Commercial ACH, Letter of Credit (LC for qualifying volumes), and verified bank deposits.</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Related Products Strip */}
+            <div className="detail-related-section">
+              <div className="related-header">
+                <span className="section-tag">CATALOG ASSORTMENT</span>
+                <h2 className="related-title">Other Products from Abeer Trading</h2>
+              </div>
+
+              <div className="products-grid">
+                {products.filter(p => p.id !== activeProduct.id).map(prod => (
+                  <div 
+                    key={prod.id} 
+                    className="product-card" 
+                    onClick={() => viewProductDetail(prod)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className="product-img-wrap">
+                      <img src={prod.image} alt={prod.name} className="product-img" loading="lazy" />
+                      <span className="product-badge">{prod.categoryName}</span>
+                    </div>
+                    <div className="product-body">
+                      <div className="product-header-row">
+                        <span className="product-sku">SKU: {prod.sku}</span>
+                        <span className="stock-tag">● {prod.availability}</span>
+                      </div>
+                      <h3 className="product-title">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); viewProductDetail(prod); }}
+                          className="product-title-btn"
+                        >
+                          {prod.name}
+                        </button>
+                      </h3>
+                      <div className="product-price-box">
+                        <span className="product-price-val">{prod.price}</span>
+                        <span className="product-price-sub">Wholesale Tiered</span>
+                      </div>
+                      <p className="product-excerpt">{prod.description}</p>
+                      <div className="product-actions-row">
+                        <button 
+                          className="btn-add-cart"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addToCart(prod, 1, true);
+                          }}
+                        >
+                          <ShoppingCart size={15} />
+                          <span>Add to cart</span>
+                        </button>
+                        <button 
+                          className="btn-view-details"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            viewProductDetail(prod);
+                          }}
+                        >
+                          <Eye size={15} />
+                          <span>View Details</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </div>
       )}
 
       {/* VIEW: ABOUT US */}
@@ -1033,7 +1531,7 @@ export default function App() {
             <div style={{ marginTop: '16px', fontSize: '0.85rem', color: '#cbd5e1' }}>
               <div><strong>Registered Address:</strong> 30 N Gould St # 68479 Sheridan, WY 82801</div>
               <div><strong>Management:</strong> Tahir Mehmood</div>
-              <div><strong>Website:</strong> abeertradingcompanyllc.com</div>
+              <div><strong>Trade Desk Hotline:</strong> (+966) 547035184 • Abeer.tahir2025@gmail.com</div>
             </div>
           </div>
 
@@ -1140,7 +1638,171 @@ export default function App() {
         </div>
       </footer>
 
-      {/* MODAL: QUOTE REQUEST OR PARTNER INQUIRY */}
+      {/* CART DRAWER SLIDE-OVER */}
+      {cartOpen && (
+        <div className="cart-backdrop" onClick={() => setCartOpen(false)}>
+          <div className="cart-drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="cart-drawer-header">
+              <div className="cart-header-title">
+                <ShoppingBag size={20} color="#1e7087" />
+                <h3>Your Wholesale Cart</h3>
+                <span className="cart-count-pill">{totalCartItems} units</span>
+              </div>
+              <button className="cart-close-btn" onClick={() => setCartOpen(false)}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="cart-drawer-body">
+              {cart.length === 0 ? (
+                <div className="cart-empty-state">
+                  <div className="empty-cart-icon">
+                    <ShoppingCart size={48} strokeWidth={1.5} color="#94a3b8" />
+                  </div>
+                  <h4>Your Cart is Empty</h4>
+                  <p>Browse our catalog and add wholesale products to calculate tiered totals or place direct orders.</p>
+                  <button 
+                    className="btn-hero-primary" 
+                    style={{ marginTop: '16px' }}
+                    onClick={() => {
+                      setCartOpen(false);
+                      navigateTo('home');
+                    }}
+                  >
+                    Explore Wholesale Catalog
+                  </button>
+                </div>
+              ) : (
+                <div className="cart-items-list">
+                  {cart.map((item) => (
+                    <div key={item.product.id} className="cart-item-card">
+                      <img 
+                        src={item.product.image} 
+                        alt={item.product.name} 
+                        className="cart-item-thumb"
+                        onClick={() => {
+                          viewProductDetail(item.product);
+                          setCartOpen(false);
+                        }}
+                      />
+                      <div className="cart-item-details">
+                        <div className="cart-item-meta">
+                          <span className="cart-item-sku">SKU: {item.product.sku}</span>
+                          <button 
+                            className="btn-remove-item"
+                            onClick={() => removeFromCart(item.product.id)}
+                            title="Remove item"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                        <h4 
+                          className="cart-item-title"
+                          onClick={() => {
+                            viewProductDetail(item.product);
+                            setCartOpen(false);
+                          }}
+                        >
+                          {item.product.name}
+                        </h4>
+                        <div className="cart-item-price-row">
+                          <span className="cart-unit-price">{item.product.price} / unit</span>
+                          <span className="cart-line-total">₨ {(item.product.priceNumeric * item.quantity).toLocaleString()}</span>
+                        </div>
+                        <div className="cart-stepper-row">
+                          <div className="cart-qty-stepper">
+                            <button 
+                              onClick={() => updateCartQuantity(item.product.id, -1)}
+                              className="cart-step-btn"
+                            >
+                              <Minus size={14} />
+                            </button>
+                            <span className="cart-step-val">{item.quantity}</span>
+                            <button 
+                              onClick={() => updateCartQuantity(item.product.id, 1)}
+                              className="cart-step-btn"
+                            >
+                              <Plus size={14} />
+                            </button>
+                          </div>
+                          <button 
+                            className="cart-view-link"
+                            onClick={() => {
+                              viewProductDetail(item.product);
+                              setCartOpen(false);
+                            }}
+                          >
+                            View details →
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {cart.length > 0 && (
+              <div className="cart-drawer-footer">
+                <div className="cart-summary-box">
+                  <div className="summary-row">
+                    <span>Total Quantity:</span>
+                    <strong>{totalCartItems} units</strong>
+                  </div>
+                  <div className="summary-row subtotal">
+                    <span>Estimated Subtotal:</span>
+                    <strong className="summary-amount">₨ {cartSubtotal.toLocaleString()}</strong>
+                  </div>
+                  <p className="summary-note">Wholesale tiered rates and freight confirmed upon order dispatch.</p>
+                </div>
+
+                <div className="cart-footer-actions">
+                  <a 
+                    href={`https://wa.me/966547035184?text=${encodeURIComponent(
+                      `Hello Tahir Mehmood, I want to place an order from Abeer Trading Company LLC:\n\n` +
+                      cart.map(i => `• ${i.product.name} (SKU: ${i.product.sku}) - Qty: ${i.quantity} x ${i.product.price} = ₨ ${(i.product.priceNumeric * i.quantity).toLocaleString()}`).join('\n') +
+                      `\n\nTotal Estimated: ₨ ${cartSubtotal.toLocaleString()}\nTotal Units: ${totalCartItems}`
+                    )}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn-cart-whatsapp"
+                  >
+                    <MessageSquare size={18} />
+                    <span>Instant Checkout via WhatsApp</span>
+                  </a>
+
+                  <button 
+                    className="btn-cart-checkout"
+                    onClick={() => {
+                      setCartOpen(false);
+                      handleOpenPartner('checkout');
+                    }}
+                  >
+                    <span>Proceed to Wholesale Checkout</span>
+                    <ArrowRight size={18} />
+                  </button>
+                </div>
+
+                <div className="cart-clear-row">
+                  <button onClick={clearCart} className="btn-clear-cart">
+                    Clear Entire Cart
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* TOAST NOTIFICATION */}
+      {toastMessage && (
+        <div className="cart-toast">
+          <CheckCircle2 size={18} color="#10b981" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* MODAL: QUOTE REQUEST, PARTNER INQUIRY, OR CHECKOUT */}
       {modalType && (
         <div className="modal-backdrop" onClick={closeModal}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
@@ -1210,10 +1872,9 @@ export default function App() {
                     <select className="form-select">
                       <option>All Product Categories</option>
                       <option>Everyday Essentials</option>
-                      <option>Beauty & Health</option>
                       <option>Home & Office</option>
                       <option>Cleaning & Commercial</option>
-                      <option>Grocery & Gourmet</option>
+                      <option>Grocery & Pantry</option>
                     </select>
                   </div>
                   <div className="form-group">
@@ -1227,12 +1888,50 @@ export default function App() {
               </>
             )}
 
+            {modalType === 'checkout' && (
+              <>
+                <h3 className="modal-title">Wholesale Checkout / Purchase Order</h3>
+                <p className="modal-subtitle">
+                  Submitting order for: <strong>{totalCartItems} units • Total: ₨ {cartSubtotal.toLocaleString()}</strong>
+                </p>
+                <form onSubmit={handleFormSubmit} className="modal-form">
+                  <div className="form-group">
+                    <label className="form-label">Buyer / Contact Name *</label>
+                    <input type="text" required placeholder="Your name" className="form-input" />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Company / Business Name *</label>
+                    <input type="text" required placeholder="Company / Organization" className="form-input" />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Business Email *</label>
+                    <input type="email" required placeholder="procurement@company.com" className="form-input" />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">WhatsApp / Phone Number *</label>
+                    <input type="tel" required placeholder="(+966) / (+1) Phone" className="form-input" />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Delivery / Destination Address *</label>
+                    <input type="text" required placeholder="Warehouse address, City, Country" className="form-input" />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Order Notes / Custom Pallet Instructions</label>
+                    <textarea rows={2} placeholder="Optional delivery instructions, dock requirements..." className="form-textarea"></textarea>
+                  </div>
+                  <button type="submit" className="btn-submit-modal">
+                    Confirm & Place Purchase Order (₨ {cartSubtotal.toLocaleString()})
+                  </button>
+                </form>
+              </>
+            )}
+
             {formSubmitted && (
               <div style={{ marginTop: '20px', padding: '16px', background: '#ecfdf5', color: '#065f46', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <CheckCircle2 size={24} color="#059669" />
                 <div>
-                  <strong>Inquiry Dispatched!</strong>
-                  <p style={{ fontSize: '0.85rem' }}>We will contact you via email / WhatsApp at the earliest.</p>
+                  <strong>Order / Inquiry Dispatched!</strong>
+                  <p style={{ fontSize: '0.85rem' }}>Tahir Mehmood and our logistics desk will confirm your order and send invoice details via WhatsApp and email promptly.</p>
                 </div>
               </div>
             )}
