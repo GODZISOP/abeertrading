@@ -3,7 +3,8 @@ import {
   Phone, Mail, MapPin, Search, ArrowRight, CheckCircle2, 
   Send, ExternalLink, ShieldCheck, Truck, Award,
   X, MessageSquare, Layers, Building2, ShoppingCart, Menu as MenuIcon,
-  Plus, Minus, Trash2, ShoppingBag, Eye, ArrowLeft, Check
+  Plus, Minus, Trash2, ShoppingBag, Eye, ArrowLeft, Check,
+  LayoutGrid, Sparkles, ChevronDown, Package
 } from 'lucide-react';
 import { categories, products } from './data/products';
 import logoImg from './images/image.png';
@@ -154,211 +155,238 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleCategoryClick = (catId) => {
+    setSelectedCategory(catId);
+    if (activeTab !== 'home') {
+      setActiveTab('home');
+    }
+    setMobileMenuOpen(false);
+    setTimeout(() => {
+      const el = document.getElementById('featured-products-section');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 60);
+  };
+
   return (
     <div className="min-h-screen bg-[#f5f7f9] text-[#1e293b]">
-      {/* 1. TOP ANNOUNCEMENT BAR */}
-      <div className="top-bar">
-        <div className="top-bar-item">
-          <span>Official Wholesale: <strong>ABEER TRADING COMPANY LLC</strong></span>
-          <span style={{ opacity: 0.5, margin: '0 6px' }}>•</span>
-          <span>Managed by Tahir Mehmood</span>
-          <span style={{ opacity: 0.5, margin: '0 6px' }}>•</span>
-          <span style={{ color: '#93c5fd' }}>30 N Gould St # 68479 Sheridan, WY 82801</span>
-        </div>
-        <div className="top-bar-contact">
-          <div className="top-bar-item">
-            <Phone size={14} color="#93c5fd" />
-            <a href="tel:+966547035184">(+966) 547035184</a>
-            <span style={{ opacity: 0.5 }}>/</span>
-            <a href="tel:+16615770052">+1 661-577-0052</a>
+      {/* 2-TIER MODERN STICKY HEADER */}
+      <header className="site-header">
+        {/* UPPER TIER: MAIN NAVIGATION */}
+        <div className="main-nav">
+          <div className="nav-brand" onClick={() => navigateTo('home')} style={{ cursor: 'pointer' }}>
+            <img src={logoImg} alt="ATC Abeer Trading Company LLC Logo" className="brand-logo-img" />
+            <div>
+              <div className="brand-title">Abeer Trading Co.</div>
+              <div className="brand-subtitle">Wholesale, Sourced Thoughtfully</div>
+            </div>
           </div>
-          <div className="top-bar-item">
-            <Mail size={14} color="#93c5fd" />
-            <a href="mailto:Abeer.tahir2025@gmail.com">Abeer.tahir2025@gmail.com</a>
-          </div>
-          <div className="top-bar-item">
-            <a 
-              href="https://wa.me/966547035184" 
-              target="_blank" 
-              rel="noreferrer"
-              style={{ color: '#4ade80', fontWeight: '600' }}
+
+          {/* Desktop Navigation Links */}
+          <nav className="desktop-nav">
+            <ul className="nav-links">
+              <li>
+                <button 
+                  className={`nav-link ${activeTab === 'home' ? 'active' : ''}`}
+                  onClick={() => navigateTo('home')}
+                >
+                  Home
+                </button>
+              </li>
+              <li>
+                <button 
+                  className={`nav-link ${activeTab === 'about' ? 'active' : ''}`}
+                  onClick={() => navigateTo('about')}
+                >
+                  About Us
+                </button>
+              </li>
+              <li>
+                <button 
+                  className={`nav-link ${activeTab === 'business' ? 'active' : ''}`}
+                  onClick={() => navigateTo('business')}
+                >
+                  Our Services
+                </button>
+              </li>
+              <li>
+                <button 
+                  className={`nav-link ${activeTab === 'partnerships' ? 'active' : ''}`}
+                  onClick={() => navigateTo('partnerships')}
+                >
+                  Wholesale Partnerships
+                </button>
+              </li>
+              <li>
+                <button 
+                  className={`nav-link ${activeTab === 'supplier' ? 'active' : ''}`}
+                  onClick={() => navigateTo('supplier')}
+                >
+                  Supplier Inquiries
+                </button>
+              </li>
+              <li>
+                <button 
+                  className={`nav-link ${activeTab === 'contact' ? 'active' : ''}`}
+                  onClick={() => navigateTo('contact')}
+                >
+                  Contact Us
+                </button>
+              </li>
+            </ul>
+          </nav>
+
+          {/* Header Action Buttons */}
+          <div className="nav-actions">
+            <button 
+              className="btn-nav-cart"
+              onClick={() => setCartOpen(true)}
+              aria-label="Open Shopping Cart"
             >
-              WhatsApp Support
-            </a>
+              <ShoppingCart size={18} />
+              <span className="nav-cart-text">Cart</span>
+              {totalCartItems > 0 && (
+                <span className="nav-cart-badge">{totalCartItems}</span>
+              )}
+            </button>
+
+            <button 
+              className="btn-nav-partner"
+              onClick={() => handleOpenPartner('partner')}
+            >
+              <span>Partner Today</span>
+              <ArrowRight size={16} />
+            </button>
+
+            <button 
+              className="mobile-toggle-btn"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle Navigation Menu"
+            >
+              <MenuIcon size={20} />
+            </button>
           </div>
         </div>
-      </div>
 
-      {/* 2. MAIN HEADER NAVIGATION WITH OFFICIAL LOGO */}
-      <header className="main-nav">
-        <div className="nav-brand" onClick={() => navigateTo('home')} style={{ cursor: 'pointer' }}>
-          <img src={logoImg} alt="ATC Abeer Trading Company LLC Logo" className="brand-logo-img" />
-          <div>
-            <div className="brand-title">Abeer Trading Co.</div>
-            <div className="brand-subtitle">Wholesale, Sourced Thoughtfully</div>
+        {/* LOWER TIER: THE BLUE LINE (PRODUCTS & CATEGORIES BAR) */}
+        <div className="products-blue-bar">
+          <div className="blue-bar-content">
+            {/* All Products master pill */}
+            <div className="blue-bar-categories">
+              <button 
+                className={`blue-cat-btn all-cat-btn ${selectedCategory === 'all' && activeTab === 'home' ? 'active' : ''}`}
+                onClick={() => handleCategoryClick('all')}
+              >
+                <LayoutGrid size={15} />
+                <span>All Products</span>
+                <span className="blue-count-pill">{products.length}</span>
+              </button>
+
+              <div className="blue-bar-divider"></div>
+
+              {/* Individual Product Categories in the Blue Line */}
+              {categories.map((cat) => {
+                const isActive = selectedCategory === cat.id && activeTab === 'home';
+                return (
+                  <button
+                    key={cat.id}
+                    className={`blue-cat-btn ${isActive ? 'active' : ''}`}
+                    onClick={() => handleCategoryClick(cat.id)}
+                  >
+                    <span>{cat.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Right side quick contact & direct trading desk info */}
+            <div className="blue-bar-perks">
+              <span className="blue-perk-item">
+                <Truck size={14} />
+                <span>Fast Global Dispatch</span>
+              </span>
+              <span className="blue-perk-divider">•</span>
+              <a href="tel:+966547035184" className="blue-perk-phone">
+                <Phone size={13} />
+                <span>(+966) 547035184</span>
+              </a>
+            </div>
           </div>
-        </div>
-
-        {/* Desktop Navigation Links */}
-        <nav>
-          <ul className="nav-links">
-            <li>
-              <button 
-                className={`nav-link ${activeTab === 'home' ? 'active' : ''}`}
-                onClick={() => navigateTo('home')}
-                style={{ background: 'none', border: 'none', font: 'inherit' }}
-              >
-                Home
-              </button>
-            </li>
-            <li>
-              <button 
-                className={`nav-link ${activeTab === 'about' ? 'active' : ''}`}
-                onClick={() => navigateTo('about')}
-                style={{ background: 'none', border: 'none', font: 'inherit' }}
-              >
-                About Us
-              </button>
-            </li>
-            <li>
-              <button 
-                className={`nav-link ${activeTab === 'business' ? 'active' : ''}`}
-                onClick={() => navigateTo('business')}
-                style={{ background: 'none', border: 'none', font: 'inherit' }}
-              >
-                Our Business
-              </button>
-            </li>
-            <li>
-              <button 
-                className={`nav-link ${activeTab === 'categories' ? 'active' : ''}`}
-                onClick={() => navigateTo('categories')}
-                style={{ background: 'none', border: 'none', font: 'inherit' }}
-              >
-                Product Categories
-              </button>
-            </li>
-            <li>
-              <button 
-                className={`nav-link ${activeTab === 'partnerships' ? 'active' : ''}`}
-                onClick={() => navigateTo('partnerships')}
-                style={{ background: 'none', border: 'none', font: 'inherit' }}
-              >
-                Wholesale Partnerships
-              </button>
-            </li>
-            <li>
-              <button 
-                className={`nav-link ${activeTab === 'supplier' ? 'active' : ''}`}
-                onClick={() => navigateTo('supplier')}
-                style={{ background: 'none', border: 'none', font: 'inherit' }}
-              >
-                Supplier Inquiries
-              </button>
-            </li>
-            <li>
-              <button 
-                className={`nav-link ${activeTab === 'contact' ? 'active' : ''}`}
-                onClick={() => navigateTo('contact')}
-                style={{ background: 'none', border: 'none', font: 'inherit' }}
-              >
-                Contact Us
-              </button>
-            </li>
-          </ul>
-        </nav>
-
-        <div className="nav-actions">
-          <button 
-            className="btn-nav-cart"
-            onClick={() => setCartOpen(true)}
-            aria-label="Open Shopping Cart"
-          >
-            <ShoppingCart size={18} />
-            <span className="nav-cart-text">Cart</span>
-            {totalCartItems > 0 && (
-              <span className="nav-cart-badge">{totalCartItems}</span>
-            )}
-          </button>
-
-          <button 
-            className="btn-nav-partner"
-            onClick={() => handleOpenPartner('partner')}
-          >
-            <span>Partner Today</span>
-            <ArrowRight size={16} />
-          </button>
-          <button 
-            className="mobile-toggle-btn"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            style={{ 
-              display: 'none',
-              background: '#f1f5f9', 
-              border: '1px solid #cbd5e1', 
-              borderRadius: '8px', 
-              padding: '8px', 
-              cursor: 'pointer' 
-            }}
-          >
-            <MenuIcon size={20} />
-          </button>
         </div>
       </header>
 
       {/* MOBILE MENU ACCORDION */}
       {mobileMenuOpen && (
-        <div style={{
-          background: '#ffffff',
-          padding: '20px',
-          borderBottom: '2px solid #e2e8f0',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '12px'
-        }}>
-          <button
-            onClick={() => {
-              setMobileMenuOpen(false);
-              setCartOpen(true);
-            }}
-            style={{
-              textAlign: 'left',
-              padding: '10px 14px',
-              background: '#e6f4f8',
-              color: '#1e7087',
-              border: 'none',
-              borderRadius: '8px',
-              fontWeight: '600',
-              fontSize: '0.95rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}
-          >
-            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <ShoppingCart size={18} />
-              <span>Shopping Cart</span>
-            </span>
-            <span className="nav-cart-badge">{totalCartItems}</span>
-          </button>
-          {['home', 'about', 'business', 'categories', 'partnerships', 'supplier', 'contact'].map(key => (
+        <div className="mobile-nav-drawer">
+          <div className="mobile-drawer-section">
             <button
-              key={key}
-              onClick={() => navigateTo(key)}
-              style={{
-                textAlign: 'left',
-                padding: '10px 14px',
-                background: activeTab === key ? '#e6f4f8' : 'transparent',
-                color: activeTab === key ? '#1e7087' : '#334155',
-                border: 'none',
-                borderRadius: '8px',
-                fontWeight: '600',
-                fontSize: '0.95rem',
-                textTransform: 'capitalize'
+              onClick={() => {
+                setMobileMenuOpen(false);
+                setCartOpen(true);
+              }}
+              className="mobile-cart-btn"
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ShoppingCart size={18} />
+                <span>Shopping Cart</span>
+              </span>
+              <span className="nav-cart-badge">{totalCartItems}</span>
+            </button>
+          </div>
+
+          <div className="mobile-drawer-section">
+            <div className="mobile-section-label">Navigation</div>
+            {[
+              { key: 'home', label: 'Home' },
+              { key: 'about', label: 'About Us' },
+              { key: 'business', label: 'Our Services' },
+              { key: 'partnerships', label: 'Wholesale Partnerships' },
+              { key: 'supplier', label: 'Supplier Inquiries' },
+              { key: 'contact', label: 'Contact Us' }
+            ].map(item => (
+              <button
+                key={item.key}
+                onClick={() => navigateTo(item.key)}
+                className={`mobile-nav-link ${activeTab === item.key ? 'active' : ''}`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="mobile-drawer-section">
+            <div className="mobile-section-label">Product Categories</div>
+            <button
+              onClick={() => handleCategoryClick('all')}
+              className={`mobile-nav-link ${selectedCategory === 'all' && activeTab === 'home' ? 'active' : ''}`}
+            >
+              <LayoutGrid size={16} />
+              <span>All Products ({products.length})</span>
+            </button>
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => handleCategoryClick(cat.id)}
+                className={`mobile-nav-link ${selectedCategory === cat.id && activeTab === 'home' ? 'active' : ''}`}
+              >
+                <span>{cat.name}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="mobile-drawer-footer">
+            <button 
+              className="btn-hero-primary"
+              style={{ width: '100%', justifyContent: 'center' }}
+              onClick={() => {
+                setMobileMenuOpen(false);
+                handleOpenPartner('partner');
               }}
             >
-              {key === 'business' ? 'Our Business' : key === 'supplier' ? 'Supplier Inquiries' : key === 'partnerships' ? 'Wholesale Partnerships' : key}
+              Partner Today
             </button>
-          ))}
+          </div>
         </div>
       )}
 
@@ -597,53 +625,6 @@ export default function App() {
                 <p className="corp-lead-text">
                   Owned and directed by <strong>Tahir Mehmood</strong>, <strong>ABEER TRADING COMPANY LLC</strong> is a registered commercial wholesale and global trade enterprise headquartered in Sheridan, Wyoming, USA. We bridge verified manufacturers and international brand sources with retail chains, regional distributors, and institutional organizations worldwide.
                 </p>
-
-                {/* Structured Verification Ledger */}
-                <div className="corp-ledger">
-                  <div className="corp-ledger-row">
-                    <span className="ledger-label">Registered Legal Entity</span>
-                    <div className="ledger-val-group">
-                      <strong>ABEER TRADING COMPANY LLC</strong>
-                      <span className="ledger-sub">State of Wyoming • Registered Domestic Entity ID # 68479</span>
-                    </div>
-                  </div>
-
-                  <div className="corp-ledger-row">
-                    <span className="ledger-label">Principal Leadership</span>
-                    <div className="ledger-val-group">
-                      <strong>Tahir Mehmood</strong>
-                      <span className="ledger-sub">Owner & Managing Director</span>
-                    </div>
-                  </div>
-
-                  <div className="corp-ledger-row">
-                    <span className="ledger-label">Registered U.S. Office</span>
-                    <div className="ledger-val-group">
-                      <span>30 N Gould St # 68479 Sheridan, WY 82801, United States</span>
-                    </div>
-                  </div>
-
-                  <div className="corp-ledger-row">
-                    <span className="ledger-label">Operational Desks</span>
-                    <div className="ledger-val-group">
-                      <span><strong>United States</strong> (Domestic Freight) • <strong>Middle East / KSA</strong> (Direct Trading Desk)</span>
-                    </div>
-                  </div>
-
-                  <div className="corp-ledger-row">
-                    <span className="ledger-label">Wholesale Portfolio</span>
-                    <div className="ledger-val-group">
-                      <span>Everyday Essentials • Beauty & Health • Home & Office • Commercial Cleaning • Pantry</span>
-                    </div>
-                  </div>
-
-                  <div className="corp-ledger-row">
-                    <span className="ledger-label">Procurement Standard</span>
-                    <div className="ledger-val-group">
-                      <span>Strict manufacturer lot tracking, transparent chain of custody, flexible MOQs, prompt multi-carrier dispatch.</span>
-                    </div>
-                  </div>
-                </div>
 
                 <div className="corp-actions-row">
                   <button 
@@ -1941,3 +1922,4 @@ export default function App() {
     </div>
   );
 }
+

@@ -29,52 +29,21 @@ body {
   line-height: 1.6;
 }
 
-/* TOP ANNOUNCEMENT BAR */
-.top-bar {
-  background: #0b1f2c;
-  color: #cbd5e1;
-  font-size: 0.85rem;
-  padding: 8px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.top-bar a {
-  color: #93c5fd;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.top-bar a:hover {
-  color: #ffffff;
-  text-decoration: underline;
-}
-
-.top-bar-contact {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.top-bar-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* MAIN NAVIGATION */
-.main-nav {
+/* ==========================================================================
+   2-TIER MODERN STICKY HEADER & PRODUCTS BLUE LINE
+   ========================================================================== */
+.site-header {
   position: sticky;
   top: 0;
-  z-index: 100;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(12px);
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(16, 42, 58, 0.08);
+}
+
+/* UPPER TIER: MAIN NAVIGATION */
+.main-nav {
+  background: #ffffff;
   border-bottom: 1px solid #e2e8f0;
-  padding: 16px 32px;
+  padding: 14px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -89,7 +58,7 @@ body {
 }
 
 .brand-logo-img {
-  height: 52px;
+  height: 50px;
   width: auto;
   object-fit: contain;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.06));
@@ -135,35 +104,95 @@ body {
   font-weight: 600;
 }
 
+.desktop-nav {
+  display: flex;
+  align-items: center;
+}
+
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 28px;
+  gap: 24px;
   list-style: none;
 }
 
 .nav-link {
   color: #334155;
-  text-decoration: none;
+  background: none;
+  border: none;
+  font-family: inherit;
   font-weight: 500;
-  font-size: 0.95rem;
-  transition: color 0.2s;
+  font-size: 0.94rem;
+  transition: all 0.2s ease;
   cursor: pointer;
+  padding: 6px 4px;
+  position: relative;
 }
 
-.nav-link:hover, .nav-link.active {
+.nav-link:hover {
   color: var(--accent-teal);
-  font-weight: 600;
+}
+
+.nav-link.active {
+  color: var(--accent-teal);
+  font-weight: 700;
+}
+
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 4px;
+  right: 4px;
+  height: 2px;
+  background: var(--accent-teal);
+  border-radius: 2px;
 }
 
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
+}
+
+.btn-nav-cart {
+  background: #f1f7f9;
+  border: 1.5px solid #d5e9f0;
+  color: #102a3a;
+  padding: 8px 18px;
+  border-radius: 30px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-nav-cart:hover {
+  background: #e3f1f6;
+  border-color: #1e7087;
+  transform: translateY(-1px);
+}
+
+.nav-cart-text {
+  font-size: 0.9rem;
+}
+
+.nav-cart-badge {
+  background: #1e7087;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 12px;
+  min-width: 18px;
+  text-align: center;
 }
 
 .btn-nav-partner {
-  background: var(--accent-teal);
+  background: linear-gradient(135deg, #1e7087 0%, #145061 100%);
   color: #ffffff;
   padding: 9px 20px;
   border-radius: 30px;
@@ -175,12 +204,254 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  box-shadow: 0 4px 12px rgba(30, 112, 135, 0.25);
 }
 
 .btn-nav-partner:hover {
   background: var(--accent-teal-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(30, 112, 135, 0.25);
+  box-shadow: 0 6px 16px rgba(30, 112, 135, 0.35);
+}
+
+.mobile-toggle-btn {
+  display: none;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  color: #1e293b;
+}
+
+/* ==========================================================================
+   LOWER TIER: THE BLUE LINE (PRODUCTS & CATEGORIES SUB-BAR)
+   ========================================================================== */
+.products-blue-bar {
+  background: linear-gradient(90deg, #0b1f2c 0%, #102a3a 50%, #16364a 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 2px solid #1a5668;
+  padding: 6px 32px;
+  position: relative;
+}
+
+.blue-bar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1350px;
+  margin: 0 auto;
+}
+
+.blue-bar-categories {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 2px 0;
+}
+
+.blue-bar-categories::-webkit-scrollbar {
+  display: none;
+}
+
+.blue-bar-divider {
+  width: 1px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 0 6px;
+  flex-shrink: 0;
+}
+
+.blue-cat-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #cbd5e1;
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.blue-cat-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.blue-cat-btn.active {
+  background: #1e7087;
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.all-cat-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #f1f5f9;
+  font-weight: 600;
+}
+
+.all-cat-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.all-cat-btn.active {
+  background: #1e7087;
+  border-color: #38bdf8;
+  color: #ffffff;
+}
+
+.blue-count-pill {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  margin-left: 2px;
+}
+
+.blue-bar-perks {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.blue-perk-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #cbd5e1;
+}
+
+.blue-perk-divider {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.blue-perk-phone {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #93c5fd;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.blue-perk-phone:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   MOBILE NAVIGATION DRAWER
+   ========================================================================== */
+.mobile-nav-drawer {
+  background: #ffffff;
+  border-bottom: 2px solid #e2e8f0;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.mobile-drawer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mobile-section-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  padding: 0 10px 6px;
+}
+
+.mobile-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  padding: 11px 14px;
+  background: transparent;
+  color: #334155;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.94rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mobile-nav-link:hover, .mobile-nav-link.active {
+  background: #e6f4f8;
+  color: #1e7087;
+}
+
+.mobile-cart-btn {
+  text-align: left;
+  padding: 12px 16px;
+  background: #e6f4f8;
+  color: #1e7087;
+  border: 1px solid #cce8f0;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.mobile-drawer-footer {
+  padding-top: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .desktop-nav {
+    display: none;
+  }
+  .mobile-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .blue-bar-perks {
+    display: none;
+  }
+  .main-nav {
+    padding: 12px 20px;
+  }
+  .products-blue-bar {
+    padding: 6px 16px;
+  }
 }
 
 /* HERO SECTION - EXACT REPLICA OF ATTACHED SCREENSHOT */
