@@ -1225,7 +1225,7 @@ export default function App() {
             </p>
 
             <form onSubmit={handleFormSubmit} className="modal-form">
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div className="form-row-2col">
                 <div className="form-group">
                   <label className="form-label">Contact Name *</label>
                   <input type="text" required placeholder="Your full name" className="form-input" />
@@ -1235,7 +1235,7 @@ export default function App() {
                   <input type="text" required placeholder="Business entity name" className="form-input" />
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div className="form-row-2col">
                 <div className="form-group">
                   <label className="form-label">Email Address *</label>
                   <input type="email" required placeholder="business@example.com" className="form-input" />
@@ -1337,7 +1337,7 @@ export default function App() {
               </div>
 
               <form onSubmit={handleFormSubmit} className="modal-form">
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="form-row-2col">
                   <div className="form-group">
                     <label className="form-label">Company / Factory Name *</label>
                     <input type="text" required placeholder="Manufacturing or trading entity" className="form-input" />
@@ -1347,7 +1347,7 @@ export default function App() {
                     <input type="text" required placeholder="Your name" className="form-input" />
                   </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="form-row-2col">
                   <div className="form-group">
                     <label className="form-label">Direct Email *</label>
                     <input type="email" required placeholder="rep@brand.com" className="form-input" />
@@ -1396,7 +1396,7 @@ export default function App() {
               </p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1.2fr', gap: '32px', marginTop: '40px' }}>
+            <div className="contact-layout-grid">
               <div style={{ background: '#102a3a', color: '#fff', padding: '36px', borderRadius: '20px' }}>
                 <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.35rem', marginBottom: '20px', borderBottom: '1px solid #1e3a4e', paddingBottom: '12px' }}>
                   Official Commercial Details
