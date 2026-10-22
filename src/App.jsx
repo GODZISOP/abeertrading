@@ -1449,7 +1449,7 @@ export default function App() {
                 </h3>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', fontSize: '0.95rem' }}>
-                  {/* Full Name */}
+                  {/* 1. Full Name */}
                   <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                     <div style={{ background: 'rgba(56, 189, 248, 0.15)', padding: '10px', borderRadius: '10px', display: 'flex' }}>
                       <User size={20} color="#38bdf8" />
@@ -1461,31 +1461,19 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Business Name */}
+                  {/* 2. Official Registered Address */}
                   <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                     <div style={{ background: 'rgba(56, 189, 248, 0.15)', padding: '10px', borderRadius: '10px', display: 'flex' }}>
-                      <Building2 size={20} color="#38bdf8" />
+                      <MapPin size={20} color="#38bdf8" />
                     </div>
                     <div>
-                      <div style={{ color: '#94a3b8', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Business Name</div>
-                      <div style={{ color: '#fff', fontWeight: '700', fontSize: '1.05rem' }}>ABEER TRADING</div>
-                      <div style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Abeer Trading Company LLC</div>
+                      <div style={{ color: '#94a3b8', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Official Registered Address</div>
+                      <div style={{ color: '#fff', fontWeight: '600' }}>30 N Gould St # 68479</div>
+                      <div style={{ color: '#cbd5e1' }}>Sheridan, WY 82801, USA</div>
                     </div>
                   </div>
 
-                  {/* Store Name / Username */}
-                  <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-                    <div style={{ background: 'rgba(56, 189, 248, 0.15)', padding: '10px', borderRadius: '10px', display: 'flex' }}>
-                      <Store size={20} color="#38bdf8" />
-                    </div>
-                    <div>
-                      <div style={{ color: '#94a3b8', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Store Name / Storefront</div>
-                      <div style={{ color: '#fff', fontWeight: '700', fontSize: '1.05rem' }}>Abeer Trading</div>
-                      <div style={{ color: '#38bdf8', fontSize: '0.85rem' }}>Verified Wholesale Storefront</div>
-                    </div>
-                  </div>
-
-                  {/* Email */}
+                  {/* 3. Email Address */}
                   <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                     <div style={{ background: 'rgba(56, 189, 248, 0.15)', padding: '10px', borderRadius: '10px', display: 'flex' }}>
                       <Mail size={20} color="#38bdf8" />
@@ -1498,7 +1486,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Phone */}
+                  {/* 4. Phone Number */}
                   <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                     <div style={{ background: 'rgba(56, 189, 248, 0.15)', padding: '10px', borderRadius: '10px', display: 'flex' }}>
                       <Phone size={20} color="#38bdf8" />
@@ -1511,7 +1499,19 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Website Link */}
+                  {/* 5. Store Name / Storefront */}
+                  <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+                    <div style={{ background: 'rgba(56, 189, 248, 0.15)', padding: '10px', borderRadius: '10px', display: 'flex' }}>
+                      <Store size={20} color="#38bdf8" />
+                    </div>
+                    <div>
+                      <div style={{ color: '#94a3b8', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Store Name / Storefront</div>
+                      <div style={{ color: '#fff', fontWeight: '700', fontSize: '1.05rem' }}>Abeer Trading</div>
+                      <div style={{ color: '#38bdf8', fontSize: '0.85rem' }}>Abeer Trading Company LLC • Verified Wholesale Storefront</div>
+                    </div>
+                  </div>
+
+                  {/* 6. Official Website */}
                   <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                     <div style={{ background: 'rgba(56, 189, 248, 0.15)', padding: '10px', borderRadius: '10px', display: 'flex' }}>
                       <Globe size={20} color="#38bdf8" />
@@ -1526,18 +1526,6 @@ export default function App() {
                       >
                         abeertrading.com <ExternalLink size={14} />
                       </a>
-                    </div>
-                  </div>
-
-                  {/* Address */}
-                  <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-                    <div style={{ background: 'rgba(56, 189, 248, 0.15)', padding: '10px', borderRadius: '10px', display: 'flex' }}>
-                      <MapPin size={20} color="#38bdf8" />
-                    </div>
-                    <div>
-                      <div style={{ color: '#94a3b8', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Official Registered Address</div>
-                      <div style={{ color: '#fff', fontWeight: '600' }}>30 N Gould St # 68479</div>
-                      <div style={{ color: '#cbd5e1' }}>Sheridan, WY 82801, USA</div>
                     </div>
                   </div>
                 </div>
