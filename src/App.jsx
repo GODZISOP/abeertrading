@@ -43,6 +43,23 @@ export default function App() {
     } catch (e) {}
   }, [cart]);
 
+  // Lock body scroll and allow Escape key when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+      const handleKeyDown = (e) => {
+        if (e.key === 'Escape') setMobileMenuOpen(false);
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [mobileMenuOpen]);
+
   // Filter & sort products
   const filteredProducts = products.filter(item => {
     const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
@@ -255,16 +272,17 @@ export default function App() {
               className="btn-nav-partner"
               onClick={() => handleOpenPartner('partner')}
             >
-              <span>Partner Today</span>
-              <ArrowRight size={16} />
+              <span className="btn-partner-text">Partner Today</span>
+              <ArrowRight size={15} className="btn-partner-icon" />
             </button>
 
             <button 
-              className="mobile-toggle-btn"
+              className={`mobile-toggle-btn ${mobileMenuOpen ? 'active' : ''}`}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle Navigation Menu"
+              aria-label={mobileMenuOpen ? "Close Navigation Menu" : "Open Navigation Menu"}
+              aria-expanded={mobileMenuOpen}
             >
-              <MenuIcon size={20} />
+              {mobileMenuOpen ? <X size={20} /> : <MenuIcon size={20} />}
             </button>
           </div>
         </div>
@@ -314,81 +332,109 @@ export default function App() {
             </div>
           </div>
         </div>
+
+        {/* MOBILE MENU ACCORDION / DRAWER INSIDE HEADER FOR ACCURATE POSITIONING */}
+        {mobileMenuOpen && (
+          <>
+            <div 
+              className="mobile-nav-backdrop" 
+              onClick={() => setMobileMenuOpen(false)} 
+              aria-hidden="true"
+            />
+            <div className="mobile-nav-drawer" role="dialog" aria-modal="true" aria-label="Mobile Navigation">
+              {/* Quick actions top bar inside drawer */}
+              <div className="mobile-drawer-quick-row">
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    setCartOpen(true);
+                  }}
+                  className="mobile-cart-btn"
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ShoppingCart size={18} />
+                    <span>Wholesale Cart</span>
+                  </span>
+                  <span className="nav-cart-badge">{totalCartItems}</span>
+                </button>
+
+                <a href="tel:+16615770052" className="mobile-quick-call-btn">
+                  <Phone size={16} />
+                  <span>Call Desk</span>
+                </a>
+              </div>
+
+              <div className="mobile-drawer-section">
+                <div className="mobile-section-label">Main Navigation</div>
+                {[
+                  { key: 'home', label: 'Home' },
+                  { key: 'about', label: 'About Us' },
+                  { key: 'business', label: 'Our Services' },
+                  { key: 'partnerships', label: 'Wholesale Partnerships' },
+                  { key: 'supplier', label: 'Supplier Inquiries' },
+                  { key: 'contact', label: 'Contact Us' }
+                ].map(item => (
+                  <button
+                    key={item.key}
+                    onClick={() => navigateTo(item.key)}
+                    className={`mobile-nav-link ${activeTab === item.key ? 'active' : ''}`}
+                  >
+                    <span>{item.label}</span>
+                    <ArrowRight size={14} className="mobile-link-arrow" />
+                  </button>
+                ))}
+              </div>
+
+              <div className="mobile-drawer-section">
+                <div className="mobile-section-label">Browse by Category</div>
+                <div className="mobile-cat-grid">
+                  <button
+                    onClick={() => handleCategoryClick('all')}
+                    className={`mobile-cat-chip ${selectedCategory === 'all' && activeTab === 'home' ? 'active' : ''}`}
+                  >
+                    <LayoutGrid size={14} />
+                    <span>All ({products.length})</span>
+                  </button>
+                  {categories.map(cat => (
+                    <button
+                      key={cat.id}
+                      onClick={() => handleCategoryClick(cat.id)}
+                      className={`mobile-cat-chip ${selectedCategory === cat.id && activeTab === 'home' ? 'active' : ''}`}
+                    >
+                      <span>{cat.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Direct Help / Info strip */}
+              <div className="mobile-drawer-info">
+                <div className="mobile-info-item">
+                  <Mail size={14} color="#1e7087" />
+                  <a href="mailto:abeertahir2025@gmail.com">abeertahir2025@gmail.com</a>
+                </div>
+                <div className="mobile-info-item">
+                  <MapPin size={14} color="#1e7087" />
+                  <span>Sheridan, WY • Tahir Mehmood</span>
+                </div>
+              </div>
+
+              <div className="mobile-drawer-footer">
+                <button 
+                  className="btn-hero-primary"
+                  style={{ width: '100%', justifyContent: 'center', padding: '14px 20px', fontSize: '0.96rem' }}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleOpenPartner('partner');
+                  }}
+                >
+                  Partner Today With Us
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </header>
-
-      {/* MOBILE MENU ACCORDION */}
-      {mobileMenuOpen && (
-        <div className="mobile-nav-drawer">
-          <div className="mobile-drawer-section">
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                setCartOpen(true);
-              }}
-              className="mobile-cart-btn"
-            >
-              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <ShoppingCart size={18} />
-                <span>Shopping Cart</span>
-              </span>
-              <span className="nav-cart-badge">{totalCartItems}</span>
-            </button>
-          </div>
-
-          <div className="mobile-drawer-section">
-            <div className="mobile-section-label">Navigation</div>
-            {[
-              { key: 'home', label: 'Home' },
-              { key: 'about', label: 'About Us' },
-              { key: 'business', label: 'Our Services' },
-              { key: 'partnerships', label: 'Wholesale Partnerships' },
-              { key: 'supplier', label: 'Supplier Inquiries' },
-              { key: 'contact', label: 'Contact Us' }
-            ].map(item => (
-              <button
-                key={item.key}
-                onClick={() => navigateTo(item.key)}
-                className={`mobile-nav-link ${activeTab === item.key ? 'active' : ''}`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="mobile-drawer-section">
-            <div className="mobile-section-label">Product Categories</div>
-            <button
-              onClick={() => handleCategoryClick('all')}
-              className={`mobile-nav-link ${selectedCategory === 'all' && activeTab === 'home' ? 'active' : ''}`}
-            >
-              <LayoutGrid size={16} />
-              <span>All Products ({products.length})</span>
-            </button>
-            {categories.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => handleCategoryClick(cat.id)}
-                className={`mobile-nav-link ${selectedCategory === cat.id && activeTab === 'home' ? 'active' : ''}`}
-              >
-                <span>{cat.name}</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="mobile-drawer-footer">
-            <button 
-              className="btn-hero-primary"
-              style={{ width: '100%', justifyContent: 'center' }}
-              onClick={() => {
-                setMobileMenuOpen(false);
-                handleOpenPartner('partner');
-              }}
-            >
-              Partner Today
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* VIEW: HOME PAGE */}
       {activeTab === 'home' && (
