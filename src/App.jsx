@@ -705,16 +705,30 @@ export default function App() {
                 </p>
 
                 <div className="trade-desk-contacts">
-                  <a href="tel:+16615770052" className="trade-contact-item">
+                  {/* 1. Name */}
+                  <div className="trade-contact-item static">
                     <div className="contact-icon-box">
-                      <Phone size={18} />
+                      <User size={18} />
                     </div>
                     <div className="contact-details">
-                      <span className="contact-role">Primary Trading Desk & Phone</span>
-                      <strong className="contact-val">+1 661-577-0052</strong>
+                      <span className="contact-role">Managing Director / Owner</span>
+                      <strong className="contact-val">Tahir Mehmood</strong>
                     </div>
-                  </a>
+                  </div>
 
+                  {/* 2. Registered Address */}
+                  <div className="trade-contact-item static">
+                    <div className="contact-icon-box">
+                      <MapPin size={18} />
+                    </div>
+                    <div className="contact-details">
+                      <span className="contact-role">Corporate Registered Address</span>
+                      <strong className="contact-val">30 N Gould St # 68479 Sheridan, WY 82801</strong>
+                      <span className="contact-note">USA & Global Distribution Facility</span>
+                    </div>
+                  </div>
+
+                  {/* 3. Direct Email */}
                   <a href="mailto:abeertahir2025@gmail.com" className="trade-contact-item">
                     <div className="contact-icon-box">
                       <Mail size={18} />
@@ -725,14 +739,25 @@ export default function App() {
                     </div>
                   </a>
 
-                  <div className="trade-contact-item static">
+                  {/* 4. Direct Phone */}
+                  <a href="tel:+16615770052" className="trade-contact-item">
                     <div className="contact-icon-box">
-                      <MapPin size={18} />
+                      <Phone size={18} />
                     </div>
                     <div className="contact-details">
-                      <span className="contact-role">Corporate Registered Address</span>
-                      <strong className="contact-val">30 N Gould St # 68479 Sheridan, WY 82801</strong>
-                      <span className="contact-note">Managed by Tahir Mehmood • USA & Global Distribution</span>
+                      <span className="contact-role">Direct Trading Desk & Phone</span>
+                      <strong className="contact-val">+1 661-577-0052</strong>
+                    </div>
+                  </a>
+
+                  {/* 5. Store Name / Storefront */}
+                  <div className="trade-contact-item static">
+                    <div className="contact-icon-box">
+                      <Store size={18} />
+                    </div>
+                    <div className="contact-details">
+                      <span className="contact-role">Storefront & Entity</span>
+                      <strong className="contact-val">Abeer Trading (WY LLC #68479)</strong>
                     </div>
                   </div>
                 </div>
