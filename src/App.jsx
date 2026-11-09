@@ -1368,7 +1368,7 @@ export default function App() {
               </p>
             </div>
 
-            {/* Quick Contact Info Strip with exact address and phone */}
+            {/* Quick Contact Info Strip with exact requested order */}
             <div style={{
               background: '#102a3a',
               color: '#ffffff',
@@ -1381,21 +1381,29 @@ export default function App() {
               gap: '16px',
               marginBottom: '32px'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <Mail size={20} color="#38bdf8" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <User size={18} color="#38bdf8" />
+                <span style={{ fontWeight: '700' }}>Tahir Mehmood</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <MapPin size={18} color="#38bdf8" />
+                <span>30 N Gould St # 68479 Sheridan, WY 82801</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Mail size={18} color="#38bdf8" />
                 <a href="mailto:abeertahir2025@gmail.com" style={{ color: '#fff', textDecoration: 'none', fontWeight: '600' }}>
                   abeertahir2025@gmail.com
                 </a>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <Phone size={20} color="#38bdf8" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Phone size={18} color="#38bdf8" />
                 <a href="tel:+16615770052" style={{ color: '#fff', textDecoration: 'none', fontWeight: '600' }}>
                   +1 661-577-0052
                 </a>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <MapPin size={20} color="#38bdf8" />
-                <span>30 N Gould St # 68479 Sheridan, WY 82801</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Store size={18} color="#38bdf8" />
+                <span style={{ color: '#93c5fd', fontWeight: '600' }}>Abeer Trading</span>
               </div>
             </div>
 
@@ -1600,10 +1608,12 @@ export default function App() {
             <p>
               Professional wholesale, sourcing, and distribution services managed by Tahir Mehmood. Dedicated to supplying top tier merchandise with transparent global logistics.
             </p>
-            <div style={{ marginTop: '16px', fontSize: '0.85rem', color: '#cbd5e1' }}>
+            <div style={{ marginTop: '16px', fontSize: '0.85rem', color: '#cbd5e1', lineHeight: '1.7' }}>
+              <div><strong>Name / Owner:</strong> Tahir Mehmood</div>
               <div><strong>Registered Address:</strong> 30 N Gould St # 68479 Sheridan, WY 82801</div>
-              <div><strong>Management:</strong> Tahir Mehmood</div>
-              <div><strong>Contact:</strong> +1 661-577-0052 • abeertahir2025@gmail.com</div>
+              <div><strong>Email:</strong> <a href="mailto:abeertahir2025@gmail.com" style={{ color: '#38bdf8' }}>abeertahir2025@gmail.com</a></div>
+              <div><strong>Phone:</strong> <a href="tel:+16615770052" style={{ color: '#fff' }}>+1 661-577-0052</a></div>
+              <div><strong>Store Name:</strong> Abeer Trading (Abeer Trading Company LLC)</div>
               <div><strong>Website:</strong> <a href="https://abeertrading.com" target="_blank" rel="noreferrer" style={{ color: '#38bdf8' }}>abeertrading.com</a></div>
             </div>
           </div>
@@ -1624,21 +1634,38 @@ export default function App() {
           <div className="footer-col">
             <h4>Contacts</h4>
             <ul style={{ marginBottom: '20px' }}>
+              {/* 1. Name */}
               <li>
-                <a href="mailto:abeertahir2025@gmail.com">
+                <span style={{ color: '#94a3b8', fontSize: '0.74rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.04em' }}>Owner / Director</span>
+                <strong style={{ color: '#fff', fontSize: '0.94rem' }}>Tahir Mehmood</strong>
+              </li>
+              {/* 2. Address */}
+              <li style={{ marginTop: '8px' }}>
+                <span style={{ color: '#94a3b8', fontSize: '0.74rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.04em' }}>Official Address</span>
+                <span style={{ color: '#cbd5e1', fontSize: '0.85rem' }}>30 N Gould St # 68479 Sheridan, WY 82801</span>
+              </li>
+              {/* 3. Email */}
+              <li style={{ marginTop: '8px' }}>
+                <span style={{ color: '#94a3b8', fontSize: '0.74rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.04em' }}>Email</span>
+                <a href="mailto:abeertahir2025@gmail.com" style={{ color: '#38bdf8', fontSize: '0.88rem' }}>
                   abeertahir2025@gmail.com
                 </a>
               </li>
-              <li>
-                <a href="tel:+16615770052">
+              {/* 4. Phone */}
+              <li style={{ marginTop: '8px' }}>
+                <span style={{ color: '#94a3b8', fontSize: '0.74rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.04em' }}>Phone</span>
+                <a href="tel:+16615770052" style={{ color: '#fff', fontSize: '0.88rem', fontWeight: '600' }}>
                   +1 661-577-0052
                 </a>
               </li>
-              <li style={{ color: '#cbd5e1', fontSize: '0.85rem', marginTop: '6px' }}>
-                30 N Gould St # 68479 Sheridan, WY 82801
-              </li>
+              {/* 5. Store Name */}
               <li style={{ marginTop: '8px' }}>
-                <a href="https://abeertrading.com" target="_blank" rel="noreferrer" style={{ color: '#38bdf8', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ color: '#94a3b8', fontSize: '0.74rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.04em' }}>Store Name</span>
+                <span style={{ color: '#cbd5e1', fontSize: '0.85rem', fontWeight: '600' }}>Abeer Trading</span>
+              </li>
+              {/* 6. Website */}
+              <li style={{ marginTop: '10px' }}>
+                <a href="https://abeertrading.com" target="_blank" rel="noreferrer" style={{ color: '#38bdf8', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.86rem' }}>
                   <Globe size={14} /> abeertrading.com
                 </a>
               </li>

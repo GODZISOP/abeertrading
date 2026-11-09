@@ -3204,18 +3204,88 @@ body {
     padding: 36px 16px 20px !important;
   }
 
-  .footer-bottom {
+  /* Categories & Products grids on tablet & phone */
+  .categories-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .category-card {
+    height: 280px !important;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 14px !important;
+  }
+
+  .corporate-profile-section {
+    padding: 40px 16px !important;
+  }
+
+  .corporate-profile-container {
+    grid-template-columns: 1fr !important;
+    gap: 28px !important;
+  }
+
+  .corp-headline {
+    font-size: 1.75rem !important;
+  }
+
+  .corp-actions-row {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 10px !important;
+  }
+
+  .corp-actions-row button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .corp-ledger-row {
+    grid-template-columns: 1fr !important;
+    gap: 4px !important;
+    padding: 12px 14px !important;
+  }
+
+  .filter-tabs {
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    padding: 4px 4px 12px !important;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .filter-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filter-tab {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .product-actions-row {
     flex-direction: column !important;
     gap: 8px !important;
-    text-align: center !important;
-    padding: 16px !important;
+  }
+
+  .product-actions-row button {
+    width: 100% !important;
   }
 }
 
-/* Extra small mobile screens (iPhone SE, small screens < 420px) */
-@media (max-width: 420px) {
+/* Extra small mobile screens (iPhone SE, small screens < 480px) */
+@media (max-width: 480px) {
+  .products-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
   .hero-title {
-    font-size: 1.8rem !important;
+    font-size: 1.85rem !important;
   }
   
   .section-title {
@@ -3229,6 +3299,10 @@ body {
 
   .detail-img-card {
     height: 260px !important;
+  }
+
+  .trade-contact-item {
+    padding: 10px !important;
   }
 }
 
