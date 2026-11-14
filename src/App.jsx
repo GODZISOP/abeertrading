@@ -7,9 +7,45 @@ import {
   LayoutGrid, Sparkles, ChevronDown, Package, User, Store, Globe
 } from 'lucide-react';
 import { categories, products } from './data/products';
+import { siteConfig as defaultSiteConfig } from './data/siteConfig';
+import { AdminPanel, useActiveSiteConfig } from './admin';
 import logoImg from './images/image.png';
 
+function isAdminHostname() {
+  if (typeof window === 'undefined') return false;
+  const host = window.location.hostname.toLowerCase();
+  return (
+    host.startsWith('admin.') ||
+    host.includes('-admin.') ||
+    host.includes('admin-') ||
+    import.meta.env.VITE_ADMIN_ONLY === 'true'
+  );
+}
+
+function checkIsAdminRoute() {
+  if (typeof window === 'undefined') return false;
+  const params = new URLSearchParams(window.location.search);
+  const cleanPath = window.location.pathname.replace(/\/+$/, '').toLowerCase();
+  const cleanHash = window.location.hash.toLowerCase();
+  if (
+    cleanPath.endsWith('/admin') ||
+    cleanHash.startsWith('#admin') ||
+    cleanHash.startsWith('#/admin') ||
+    params.has('admin')
+  ) {
+    return true;
+  }
+  if (isAdminHostname() && !params.has('preview')) {
+    return true;
+  }
+  return false;
+}
+
 export default function App() {
+  const { config: dynamicConfig, refresh: refreshActiveSite } = useActiveSiteConfig();
+  const siteConfig = dynamicConfig || defaultSiteConfig;
+  const [isAdminMode, setIsAdminMode] = useState(checkIsAdminRoute);
+
   const [activeTab, setActiveTab] = useState('home');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -35,6 +71,59 @@ export default function App() {
   const [detailQuantity, setDetailQuantity] = useState(1);
   const [activeDetailTab, setActiveDetailTab] = useState('description');
   const [toastMessage, setToastMessage] = useState(null);
+
+  // Sync Admin route on hash/popstate
+  useEffect(() => {
+    const onRouteChange = () => setIsAdminMode(checkIsAdminRoute());
+    window.addEventListener('hashchange', onRouteChange);
+    window.addEventListener('popstate', onRouteChange);
+    return () => {
+      window.removeEventListener('hashchange', onRouteChange);
+      window.removeEventListener('popstate', onRouteChange);
+    };
+  }, []);
+
+  const exitAdmin = (targetSlug = null) => {
+    const params = new URLSearchParams();
+    if (targetSlug) params.set('site', targetSlug);
+    if (isAdminHostname()) params.set('preview', '1');
+    const qs = params.toString();
+    const nextUrl = qs ? `/?${qs}` : '/';
+    window.history.pushState({}, '', nextUrl);
+    setIsAdminMode(false);
+    refreshActiveSite();
+    window.scrollTo({ top: 0 });
+  };
+
+  // Apply theme & document title & browser favicon from siteConfig
+  useEffect(() => {
+    if (isAdminMode) {
+      document.title = 'Control Panel | Multi-Website Admin';
+      return;
+    }
+    if (siteConfig.theme) {
+      const root = document.documentElement;
+      if (siteConfig.theme.primaryNavy) root.style.setProperty('--primary-navy', siteConfig.theme.primaryNavy);
+      if (siteConfig.theme.secondaryTeal) root.style.setProperty('--secondary-teal', siteConfig.theme.secondaryTeal);
+      const accent = siteConfig.theme.accentTeal || siteConfig.theme.accentGold;
+      if (accent) {
+        root.style.setProperty('--accent-teal', accent);
+      }
+      if (siteConfig.theme.accentHover) {
+        root.style.setProperty('--accent-teal-hover', siteConfig.theme.accentHover);
+      }
+      if (siteConfig.theme.bgLight) {
+        root.style.setProperty('--bg-light', siteConfig.theme.bgLight);
+      }
+    }
+    if (siteConfig.companyName) {
+      document.title = siteConfig.companyName + (siteConfig.tagline ? ' | ' + siteConfig.tagline : '');
+    }
+    const faviconLink = document.querySelector("link[rel*='icon']");
+    if (faviconLink && siteConfig.logo) {
+      faviconLink.href = siteConfig.logo;
+    }
+  }, [siteConfig, isAdminMode]);
 
   // Sync cart to localStorage
   useEffect(() => {
@@ -186,6 +275,10 @@ export default function App() {
     }, 60);
   };
 
+  if (isAdminMode) {
+    return <AdminPanel onExitAdmin={exitAdmin} />;
+  }
+
   return (
     <div className="min-h-screen bg-[#f5f7f9] text-[#1e293b]">
       {/* 2-TIER MODERN STICKY HEADER */}
@@ -193,10 +286,10 @@ export default function App() {
         {/* UPPER TIER: MAIN NAVIGATION */}
         <div className="main-nav">
           <div className="nav-brand" onClick={() => navigateTo('home')} style={{ cursor: 'pointer' }}>
-            <img src={logoImg} alt="ATC Abeer Trading Company LLC Logo" className="brand-logo-img" />
+            <img src={siteConfig.logo || logoImg} alt={`${siteConfig.companyName} Logo`} className="brand-logo-img" />
             <div>
-              <div className="brand-title">Abeer Trading Co.</div>
-              <div className="brand-subtitle">Wholesale, Sourced Thoughtfully</div>
+              <div className="brand-title">{siteConfig.shortName || siteConfig.companyName}</div>
+              <div className="brand-subtitle">{siteConfig.tagline}</div>
             </div>
           </div>
 
@@ -325,9 +418,9 @@ export default function App() {
                 <span>Fast Global Dispatch</span>
               </span>
               <span className="blue-perk-divider">•</span>
-              <a href="tel:+966547035184" className="blue-perk-phone">
+              <a href={`tel:${siteConfig.phonePrimaryTel}`} className="blue-perk-phone">
                 <Phone size={13} />
-                <span>(+966) 547035184</span>
+                <span>{siteConfig.phonePrimary}</span>
               </a>
             </div>
           </div>
@@ -358,7 +451,7 @@ export default function App() {
                   <span className="nav-cart-badge">{totalCartItems}</span>
                 </button>
 
-                <a href="tel:+966547035184" className="mobile-quick-call-btn">
+                <a href={`tel:${siteConfig.phonePrimaryTel}`} className="mobile-quick-call-btn">
                   <Phone size={16} />
                   <span>Call Desk</span>
                 </a>
@@ -410,12 +503,12 @@ export default function App() {
               {/* Direct Help / Info strip */}
               <div className="mobile-drawer-info">
                 <div className="mobile-info-item">
-                  <Mail size={14} color="#1e7087" />
-                  <a href="mailto:abeertahir2025@gmail.com">abeertahir2025@gmail.com</a>
+                  <Mail size={14} color="var(--accent-teal)" />
+                  <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>
                 </div>
                 <div className="mobile-info-item">
-                  <MapPin size={14} color="#1e7087" />
-                  <span>Sheridan, WY • Tahir Mehmood</span>
+                  <MapPin size={14} color="var(--accent-teal)" />
+                  <span>{siteConfig.address?.line2 || 'Sheridan, WY'} • {siteConfig.companyName}</span>
                 </div>
               </div>
 
@@ -444,10 +537,10 @@ export default function App() {
             <div className="hero-overlay"></div>
             <div className="hero-container">
               <div className="hero-content">
-                <div className="hero-pretitle">Abeer Trading Company llc</div>
-                <h1 className="hero-title">Wholesale, Sourced Thoughtfully</h1>
+                <div className="hero-pretitle">{siteConfig.companyName}</div>
+                <h1 className="hero-title">{siteConfig.heroTitle || siteConfig.tagline}</h1>
                 <p className="hero-description">
-                  ABEER TRADING COMPANY LLC is owned and managed by Tahir Mehmood, providing institutional and retail partners with verified wholesale sourcing, certified procurement, and cross-border distribution. For direct commercial inquiries, contact our executive trade desk at (+966) 547035184 or email abeertahir2025@gmail.com.
+                  {siteConfig.heroSubtitle} Direct commercial inquiries: {siteConfig.phoneDirect} or {siteConfig.email}.
                 </p>
                 <div className="hero-actions">
                   <button 
@@ -669,7 +762,7 @@ export default function App() {
                 </h2>
                 
                 <p className="corp-lead-text">
-                  Owned and directed by <strong>Tahir Mehmood</strong>, <strong>ABEER TRADING COMPANY LLC</strong> is a registered commercial wholesale and global trade enterprise headquartered in Sheridan, Wyoming, USA. We bridge verified manufacturers and international brand sources with retail chains, regional distributors, and institutional organizations worldwide.
+                  {siteConfig.ownerName ? <>Owned and directed by <strong>{siteConfig.ownerName}</strong>, </> : null}<strong>{siteConfig.legalName || siteConfig.companyName}</strong> is a registered commercial wholesale and global trade enterprise headquartered in {siteConfig.address?.cityStateZip || 'Sheridan, WY, USA'}. We bridge verified manufacturers and international brand sources with retail chains, regional distributors, and institutional organizations worldwide.
                 </p>
 
                 <div className="corp-actions-row">
@@ -695,7 +788,7 @@ export default function App() {
                   <span className="trade-desk-status">
                     <span className="pulse-indicator"></span> Direct Trading Desk Active
                   </span>
-                  <span className="trade-desk-id">WY LLC #68479</span>
+                  <span className="trade-desk-id">{siteConfig.address?.jurisdiction || 'Wyoming LLC #68479'}</span>
                 </div>
 
                 <h3 className="trade-desk-title">Wholesale Inquiries & Quotes</h3>
@@ -705,66 +798,77 @@ export default function App() {
                 </p>
 
                 <div className="trade-desk-contacts">
-                  {/* 1. Name */}
+                  {/* 1. Company Name */}
                   <div className="trade-contact-item static">
                     <div className="contact-icon-box">
-                      <User size={18} />
+                      <Building2 size={18} />
                     </div>
                     <div className="contact-details">
-                      <span className="contact-role">Managing Director / Owner</span>
-                      <strong className="contact-val">Tahir Mehmood</strong>
+                      <span className="contact-role">Company Name</span>
+                      <strong className="contact-val">{siteConfig.companyName}</strong>
                     </div>
                   </div>
 
-                  {/* 2. Registered Address */}
+                  {/* 2. Phone Number */}
+                  <a href={`tel:${(siteConfig.phoneDirect || '').replace(/[^+\d]/g, '')}`} className="trade-contact-item">
+                    <div className="contact-icon-box">
+                      <Phone size={18} />
+                    </div>
+                    <div className="contact-details">
+                      <span className="contact-role">Phone Number</span>
+                      <strong className="contact-val">{siteConfig.phoneDirect}</strong>
+                    </div>
+                  </a>
+
+                  {/* 3. WhatsApp Number */}
+                  <a href={`https://wa.me/${(siteConfig.whatsappNumber || '').replace(/[^\d]/g, '')}`} target="_blank" rel="noreferrer" className="trade-contact-item">
+                    <div className="contact-icon-box">
+                      <MessageSquare size={18} />
+                    </div>
+                    <div className="contact-details">
+                      <span className="contact-role">WhatsApp Number</span>
+                      <strong className="contact-val">{siteConfig.whatsappDisplay || siteConfig.phoneDirect}</strong>
+                    </div>
+                  </a>
+
+                  {/* 4. Email Address */}
+                  <a href={`mailto:${siteConfig.email}`} className="trade-contact-item">
+                    <div className="contact-icon-box">
+                      <Mail size={18} />
+                    </div>
+                    <div className="contact-details">
+                      <span className="contact-role">Email Address</span>
+                      <strong className="contact-val">{siteConfig.email}</strong>
+                    </div>
+                  </a>
+
+                  {/* 5. Address */}
                   <div className="trade-contact-item static">
                     <div className="contact-icon-box">
                       <MapPin size={18} />
                     </div>
                     <div className="contact-details">
-                      <span className="contact-role">Corporate Registered Address</span>
-                      <strong className="contact-val">30 N Gould St # 68479 Sheridan, WY 82801</strong>
+                      <span className="contact-role">Registered Address</span>
+                      <strong className="contact-val">{siteConfig.address?.line1} {siteConfig.address?.line2}</strong>
                       <span className="contact-note">USA & Global Distribution Facility</span>
                     </div>
                   </div>
 
-                  {/* 3. Direct Email */}
-                  <a href="mailto:abeertahir2025@gmail.com" className="trade-contact-item">
+                  {/* 6. Official Website */}
+                  <a href={siteConfig.footer?.websiteUrl || `https://${siteConfig.website}`} target="_blank" rel="noreferrer" className="trade-contact-item">
                     <div className="contact-icon-box">
-                      <Mail size={18} />
+                      <Globe size={18} />
                     </div>
                     <div className="contact-details">
-                      <span className="contact-role">Direct Executive Email</span>
-                      <strong className="contact-val">abeertahir2025@gmail.com</strong>
+                      <span className="contact-role">Official Website</span>
+                      <strong className="contact-val">{siteConfig.website}</strong>
                     </div>
                   </a>
-
-                  {/* 4. Direct Phone */}
-                  <a href="tel:+966547035184" className="trade-contact-item">
-                    <div className="contact-icon-box">
-                      <Phone size={18} />
-                    </div>
-                    <div className="contact-details">
-                      <span className="contact-role">Direct Trading Desk & Phone</span>
-                      <strong className="contact-val">(+966) 547035184</strong>
-                    </div>
-                  </a>
-
-                  {/* 5. Store Name / Storefront */}
-                  <div className="trade-contact-item static">
-                    <div className="contact-icon-box">
-                      <Store size={18} />
-                    </div>
-                    <div className="contact-details">
-                      <span className="contact-role">Storefront & Entity</span>
-                      <strong className="contact-val">Abeer Trading (WY LLC #68479)</strong>
-                    </div>
-                  </div>
                 </div>
 
                 <div className="trade-desk-cta-group">
                   <a 
-                    href="https://wa.me/966547035184" 
+                    href={`https://wa.me/${(siteConfig.whatsappNumber || '').replace(/[^\d]/g, '')}`} 
                     target="_blank" 
                     rel="noreferrer"
                     className="btn-trade-whatsapp"
@@ -840,21 +944,21 @@ export default function App() {
                     <Truck size={18} className="assurance-icon" />
                     <div>
                       <strong>Fast B2B Dispatch</strong>
-                      <span>Dispatched via Sheridan, WY & KSA Trade Hubs</span>
+                      <span>{siteConfig.hubs?.originText || 'Dispatched via Sheridan, WY & KSA Trade Hubs'}</span>
                     </div>
                   </div>
                   <div className="assurance-item">
                     <Award size={18} className="assurance-icon" />
                     <div>
                       <strong>Quality Inspected</strong>
-                      <span>Verified under Tahir Mehmood management</span>
+                      <span>Verified under {siteConfig.ownerName || siteConfig.companyName} management</span>
                     </div>
                   </div>
                   <div className="assurance-item">
                     <Building2 size={18} className="assurance-icon" />
                     <div>
-                      <strong>Wyoming LLC Registered</strong>
-                      <span>Official Corporate Wholesale Entity #68479</span>
+                      <strong>Registered Wholesale Entity</strong>
+                      <span>Official {siteConfig.address?.jurisdiction || 'Wyoming LLC #68479'}</span>
                     </div>
                   </div>
                 </div>
@@ -971,7 +1075,7 @@ export default function App() {
                     </button>
 
                     <a 
-                      href={`https://wa.me/966547035184?text=${encodeURIComponent(`Hello Tahir Mehmood, I want to order ${detailQuantity}x ${activeProduct.name} (SKU: ${activeProduct.sku}, Total: $${(activeProduct.priceNumeric * detailQuantity).toLocaleString()}) from Abeer Trading Company LLC.`)}`}
+                      href={`https://wa.me/${(siteConfig.whatsappNumber || '').replace(/[^\d]/g, '')}?text=${encodeURIComponent(`Hello ${siteConfig.ownerName || siteConfig.companyName}, I want to order ${detailQuantity}x ${activeProduct.name} (SKU: ${activeProduct.sku}, Total: $${(activeProduct.priceNumeric * detailQuantity).toLocaleString()}) from ${siteConfig.companyName}.`)}`}
                       target="_blank"
                       rel="noreferrer"
                       className="btn-detail-whatsapp"
@@ -994,12 +1098,12 @@ export default function App() {
                 {/* Contact Help Strip */}
                 <div className="detail-help-strip">
                   <span>Questions about bulk orders?</span>
-                  <a href="tel:+966547035184" className="help-link">
-                    <Phone size={14} /> (+966) 547035184
+                  <a href={`tel:${(siteConfig.phoneDirect || '').replace(/[^+\d]/g, '')}`} className="help-link">
+                    <Phone size={14} /> {siteConfig.phoneDirect}
                   </a>
                   <span className="sep">•</span>
-                  <a href="mailto:abeertahir2025@gmail.com" className="help-link">
-                    <Mail size={14} /> abeertahir2025@gmail.com
+                  <a href={`mailto:${siteConfig.email}`} className="help-link">
+                    <Mail size={14} /> {siteConfig.email}
                   </a>
                 </div>
 
@@ -1077,7 +1181,7 @@ export default function App() {
                       </div>
                       <div className="ship-card">
                         <h4>Shipping Hubs & Carriers</h4>
-                        <p>Dispatched from our primary registered facilities at Sheridan, Wyoming (US domestic & North America) and our Middle East trade hub in KSA.</p>
+                        <p>{siteConfig.hubs?.dispatchNote || 'Dispatched from our primary registered facilities at Sheridan, Wyoming (US domestic & North America) and our Middle East trade hub in KSA.'}</p>
                       </div>
                       <div className="ship-card">
                         <h4>Pallet & Container Loads</h4>
@@ -1097,7 +1201,7 @@ export default function App() {
             <div className="detail-related-section">
               <div className="related-header">
                 <span className="section-tag">CATALOG ASSORTMENT</span>
-                <h2 className="related-title">Other Products from Abeer Trading</h2>
+                <h2 className="related-title">Other Products from {siteConfig.shortName || siteConfig.companyName}</h2>
               </div>
 
               <div className="products-grid">
@@ -1167,9 +1271,9 @@ export default function App() {
         <div className="section-wrapper" style={{ padding: '60px 24px' }}>
           <div style={{ maxWidth: '850px', margin: '0 auto', background: '#fff', padding: '48px', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
             <span className="section-tag">COMPANY OVERVIEW</span>
-            <h1 className="section-title" style={{ marginBottom: '20px' }}>About Abeer Trading Company LLC</h1>
+            <h1 className="section-title" style={{ marginBottom: '20px' }}>About {siteConfig.companyName}</h1>
             <p style={{ fontSize: '1.05rem', color: '#475569', lineHeight: 1.8, marginBottom: '20px' }}>
-              <strong>ABEER TRADING COMPANY LLC</strong> is owned and managed by <strong>Tahir Mehmood</strong>, operating from our registered headquarters at <strong>30 N Gould St # 68479 Sheridan, WY 82801</strong>. Our mission is to bridge the gap between quality manufacturers and businesses across retail, hospitality, industrial sectors, and e-commerce distribution channels.
+              <strong>{siteConfig.legalName || siteConfig.companyName}</strong>{siteConfig.ownerName ? <> is owned and managed by <strong>{siteConfig.ownerName}</strong>, operating</> : ' operates'} from our registered headquarters at <strong>{siteConfig.address?.full || `${siteConfig.address?.line1} ${siteConfig.address?.line2}`}</strong>. Our mission is to bridge the gap between quality manufacturers and businesses across retail, hospitality, industrial sectors, and e-commerce distribution channels.
             </p>
             <p style={{ fontSize: '1rem', color: '#475569', lineHeight: 1.8, marginBottom: '20px' }}>
               We pride ourselves on thoughtful sourcing — choosing products that deliver genuine performance, high customer satisfaction, and dependable margin structure for our wholesale partners worldwide.
@@ -1292,7 +1396,7 @@ export default function App() {
             <span className="section-tag">EXPAND WITH US</span>
             <h1 className="section-title" style={{ marginBottom: '16px' }}>Wholesale Partnerships</h1>
             <p style={{ color: '#475569', fontSize: '1rem', lineHeight: 1.7, marginBottom: '24px' }}>
-              Whether you are an independent supermarket, a chain retailer, or an online merchant, ABEER TRADING COMPANY LLC provides flexible minimums, volume price tiers, and dependable fulfillment.
+              Whether you are an independent supermarket, a chain retailer, or an online merchant, {siteConfig.legalName || siteConfig.companyName} provides flexible minimums, volume price tiers, and dependable fulfillment.
             </p>
 
             <form onSubmit={handleFormSubmit} className="modal-form">
@@ -1313,7 +1417,7 @@ export default function App() {
                 </div>
                 <div className="form-group">
                   <label className="form-label">Phone Number *</label>
-                  <input type="tel" required placeholder="(+966) 547035184" className="form-input" />
+                  <input type="tel" required placeholder={siteConfig.phoneDirect} className="form-input" />
                 </div>
               </div>
               <div className="form-group">
@@ -1348,7 +1452,7 @@ export default function App() {
                 <CheckCircle2 size={24} color="#059669" />
                 <div>
                   <strong>Application Submitted Successfully!</strong>
-                  <p style={{ fontSize: '0.88rem' }}>Our wholesale accounts director Tahir Mehmood will review your details and contact you shortly.</p>
+                  <p style={{ fontSize: '0.88rem' }}>Our wholesale accounts director {siteConfig.ownerName || siteConfig.companyName} will review your details and contact you shortly.</p>
                 </div>
               </div>
             )}
@@ -1356,7 +1460,7 @@ export default function App() {
         </div>
       )}
 
-      {/* VIEW: SUPPLIER INQUIRIES (WITH EXACT TEXT PROVIDED BY USER) */}
+      {/* VIEW: SUPPLIER INQUIRIES */}
       {activeTab === 'supplier' && (
         <div className="section-wrapper" style={{ padding: '60px 24px' }}>
           <div style={{ maxWidth: '850px', margin: '0 auto' }}>
@@ -1368,7 +1472,7 @@ export default function App() {
               </p>
             </div>
 
-            {/* Quick Contact Info Strip with exact requested order */}
+            {/* Quick Contact Info Strip with unified 1-6 sequence */}
             <div style={{
               background: '#102a3a',
               color: '#ffffff',
@@ -1381,29 +1485,43 @@ export default function App() {
               gap: '16px',
               marginBottom: '32px'
             }}>
+              {/* 1. Company Name */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <User size={18} color="#38bdf8" />
-                <span style={{ fontWeight: '700' }}>Tahir Mehmood</span>
+                <Building2 size={18} color="#38bdf8" />
+                <span style={{ fontWeight: '700' }}>{siteConfig.companyName}</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <MapPin size={18} color="#38bdf8" />
-                <span>30 N Gould St # 68479 Sheridan, WY 82801</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Mail size={18} color="#38bdf8" />
-                <a href="mailto:abeertahir2025@gmail.com" style={{ color: '#fff', textDecoration: 'none', fontWeight: '600' }}>
-                  abeertahir2025@gmail.com
-                </a>
-              </div>
+              {/* 2. Phone Number */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Phone size={18} color="#38bdf8" />
-                <a href="tel:+966547035184" style={{ color: '#fff', textDecoration: 'none', fontWeight: '600' }}>
-                  (+966) 547035184
+                <a href={`tel:${(siteConfig.phoneDirect || '').replace(/[^+\d]/g, '')}`} style={{ color: '#fff', textDecoration: 'none', fontWeight: '600' }}>
+                  {siteConfig.phoneDirect}
                 </a>
               </div>
+              {/* 3. WhatsApp Number */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Store size={18} color="#38bdf8" />
-                <span style={{ color: '#93c5fd', fontWeight: '600' }}>Abeer Trading</span>
+                <MessageSquare size={18} color="#38bdf8" />
+                <a href={`https://wa.me/${(siteConfig.whatsappNumber || '').replace(/[^\d]/g, '')}`} target="_blank" rel="noreferrer" style={{ color: '#4ade80', textDecoration: 'none', fontWeight: '600' }}>
+                  {siteConfig.whatsappDisplay || siteConfig.phoneDirect}
+                </a>
+              </div>
+              {/* 4. Email Address */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Mail size={18} color="#38bdf8" />
+                <a href={`mailto:${siteConfig.email}`} style={{ color: '#fff', textDecoration: 'none', fontWeight: '600' }}>
+                  {siteConfig.email}
+                </a>
+              </div>
+              {/* 5. Address */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <MapPin size={18} color="#38bdf8" />
+                <span>{siteConfig.address?.full || `${siteConfig.address?.line1} ${siteConfig.address?.line2}`}</span>
+              </div>
+              {/* 6. Official Website */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Globe size={18} color="#38bdf8" />
+                <a href={siteConfig.footer?.websiteUrl || `https://${siteConfig.website}`} target="_blank" rel="noreferrer" style={{ color: '#93c5fd', textDecoration: 'none', fontWeight: '600' }}>
+                  {siteConfig.website}
+                </a>
               </div>
             </div>
 
@@ -1469,7 +1587,7 @@ export default function App() {
           <div style={{ maxWidth: '960px', margin: '0 auto' }}>
             <div className="section-header-center">
               <span className="section-tag">GET IN TOUCH</span>
-              <h1 className="section-title">Contact Abeer Trading</h1>
+              <h1 className="section-title">Contact {siteConfig.shortName || siteConfig.companyName}</h1>
               <p style={{ color: '#64748b', maxWidth: '600px', margin: '10px auto 0' }}>
                 We are at your service for catalog requests, partnership discussions, or direct wholesale inquiries.
               </p>
@@ -1482,65 +1600,66 @@ export default function App() {
                 </h3>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', fontSize: '0.95rem' }}>
-                  {/* 1. Full Name */}
+                  {/* 1. Company Name */}
                   <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                     <div style={{ background: 'rgba(56, 189, 248, 0.15)', padding: '10px', borderRadius: '10px', display: 'flex' }}>
-                      <User size={20} color="#38bdf8" />
+                      <Building2 size={20} color="#38bdf8" />
                     </div>
                     <div>
-                      <div style={{ color: '#94a3b8', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Full Name</div>
-                      <div style={{ color: '#fff', fontWeight: '700', fontSize: '1.05rem' }}>TAHIR MEHMOOD</div>
-                      <div style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Owner & Managing Director</div>
+                      <div style={{ color: '#94a3b8', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Company Name</div>
+                      <div style={{ color: '#fff', fontWeight: '700', fontSize: '1.05rem' }}>{siteConfig.companyName}</div>
+                      {siteConfig.ownerName && <div style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Managing Director: {siteConfig.ownerName}</div>}
                     </div>
                   </div>
 
-                  {/* 2. Official Registered Address */}
-                  <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-                    <div style={{ background: 'rgba(56, 189, 248, 0.15)', padding: '10px', borderRadius: '10px', display: 'flex' }}>
-                      <MapPin size={20} color="#38bdf8" />
-                    </div>
-                    <div>
-                      <div style={{ color: '#94a3b8', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Official Registered Address</div>
-                      <div style={{ color: '#fff', fontWeight: '600' }}>30 N Gould St # 68479</div>
-                      <div style={{ color: '#cbd5e1' }}>Sheridan, WY 82801, USA</div>
-                    </div>
-                  </div>
-
-                  {/* 3. Email Address */}
-                  <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-                    <div style={{ background: 'rgba(56, 189, 248, 0.15)', padding: '10px', borderRadius: '10px', display: 'flex' }}>
-                      <Mail size={20} color="#38bdf8" />
-                    </div>
-                    <div>
-                      <div style={{ color: '#94a3b8', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Email Address</div>
-                      <a href="mailto:abeertahir2025@gmail.com" style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: '700', fontSize: '1rem', wordBreak: 'break-all' }}>
-                        abeertahir2025@gmail.com
-                      </a>
-                    </div>
-                  </div>
-
-                  {/* 4. Phone Number */}
+                  {/* 2. Phone Number */}
                   <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                     <div style={{ background: 'rgba(56, 189, 248, 0.15)', padding: '10px', borderRadius: '10px', display: 'flex' }}>
                       <Phone size={20} color="#38bdf8" />
                     </div>
                     <div>
                       <div style={{ color: '#94a3b8', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Phone Number</div>
-                      <a href="tel:+966547035184" style={{ color: '#fff', fontWeight: '700', fontSize: '1.05rem', textDecoration: 'none' }}>
-                        (+966) 547035184
+                      <a href={`tel:${(siteConfig.phoneDirect || '').replace(/[^+\d]/g, '')}`} style={{ color: '#fff', fontWeight: '700', fontSize: '1.05rem', textDecoration: 'none' }}>
+                        {siteConfig.phoneDirect}
                       </a>
                     </div>
                   </div>
 
-                  {/* 5. Store Name / Storefront */}
+                  {/* 3. WhatsApp Number */}
                   <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                     <div style={{ background: 'rgba(56, 189, 248, 0.15)', padding: '10px', borderRadius: '10px', display: 'flex' }}>
-                      <Store size={20} color="#38bdf8" />
+                      <MessageSquare size={20} color="#38bdf8" />
                     </div>
                     <div>
-                      <div style={{ color: '#94a3b8', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Store Name / Storefront</div>
-                      <div style={{ color: '#fff', fontWeight: '700', fontSize: '1.05rem' }}>Abeer Trading</div>
-                      <div style={{ color: '#38bdf8', fontSize: '0.85rem' }}>Abeer Trading Company LLC • Verified Wholesale Storefront</div>
+                      <div style={{ color: '#94a3b8', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>WhatsApp Number</div>
+                      <a href={`https://wa.me/${(siteConfig.whatsappNumber || '').replace(/[^\d]/g, '')}`} target="_blank" rel="noreferrer" style={{ color: '#4ade80', fontWeight: '700', fontSize: '1.05rem', textDecoration: 'none' }}>
+                        {siteConfig.whatsappDisplay || siteConfig.phoneDirect}
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* 4. Email Address */}
+                  <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+                    <div style={{ background: 'rgba(56, 189, 248, 0.15)', padding: '10px', borderRadius: '10px', display: 'flex' }}>
+                      <Mail size={20} color="#38bdf8" />
+                    </div>
+                    <div>
+                      <div style={{ color: '#94a3b8', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Email Address</div>
+                      <a href={`mailto:${siteConfig.email}`} style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: '700', fontSize: '1rem', wordBreak: 'break-all' }}>
+                        {siteConfig.email}
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* 5. Official Registered Address */}
+                  <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+                    <div style={{ background: 'rgba(56, 189, 248, 0.15)', padding: '10px', borderRadius: '10px', display: 'flex' }}>
+                      <MapPin size={20} color="#38bdf8" />
+                    </div>
+                    <div>
+                      <div style={{ color: '#94a3b8', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Official Registered Address</div>
+                      <div style={{ color: '#fff', fontWeight: '600' }}>{siteConfig.address?.line1}</div>
+                      <div style={{ color: '#cbd5e1' }}>{siteConfig.address?.cityStateZip || siteConfig.address?.line2}</div>
                     </div>
                   </div>
 
@@ -1552,12 +1671,12 @@ export default function App() {
                     <div>
                       <div style={{ color: '#94a3b8', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Official Website</div>
                       <a 
-                        href="https://abeertrading.com" 
+                        href={siteConfig.footer?.websiteUrl || `https://${siteConfig.website}`} 
                         target="_blank" 
                         rel="noreferrer" 
                         style={{ color: '#38bdf8', fontWeight: '700', fontSize: '1rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                       >
-                        abeertrading.com <ExternalLink size={14} />
+                        {siteConfig.website} <ExternalLink size={14} />
                       </a>
                     </div>
                   </div>
@@ -1590,7 +1709,7 @@ export default function App() {
 
                 {formSubmitted && (
                   <div style={{ marginTop: '16px', padding: '12px', background: '#ecfdf5', color: '#065f46', borderRadius: '8px', fontSize: '0.9rem' }}>
-                    Thank you! Your message has been routed to Tahir Mehmood. We will reply within 24 hours.
+                    Thank you! Your message has been routed to {siteConfig.ownerName || siteConfig.companyName}. We will reply within 24 hours.
                   </div>
                 )}
               </div>
@@ -1599,22 +1718,22 @@ export default function App() {
         </div>
       )}
 
-      {/* 3. FOOTER AS EXACTLY SPECIFIED BY USER */}
+      {/* FOOTER */}
       <footer className="site-footer">
         <div className="footer-container">
           <div className="footer-brand">
-            <img src={logoImg} alt="ATC Abeer Trading Company LLC Logo" className="footer-logo-img" />
-            <h3>Abeer Trading LLC</h3>
+            <img src={siteConfig.logo || logoImg} alt={`${siteConfig.companyName} Logo`} className="footer-logo-img" />
+            <h3>{siteConfig.companyName}</h3>
             <p>
-              Professional wholesale, sourcing, and distribution services managed by Tahir Mehmood. Dedicated to supplying top tier merchandise with transparent global logistics.
+              Professional wholesale, sourcing, and distribution services{siteConfig.ownerName ? ` managed by ${siteConfig.ownerName}` : ''}. Dedicated to supplying top tier merchandise with transparent global logistics.
             </p>
             <div style={{ marginTop: '16px', fontSize: '0.85rem', color: '#cbd5e1', lineHeight: '1.7' }}>
-              <div><strong>Name / Owner:</strong> Tahir Mehmood</div>
-              <div><strong>Registered Address:</strong> 30 N Gould St # 68479 Sheridan, WY 82801</div>
-              <div><strong>Email:</strong> <a href="mailto:abeertahir2025@gmail.com" style={{ color: '#38bdf8' }}>abeertahir2025@gmail.com</a></div>
-              <div><strong>Phone:</strong> <a href="tel:+966547035184" style={{ color: '#fff' }}>(+966) 547035184</a></div>
-              <div><strong>Store Name:</strong> Abeer Trading (Abeer Trading Company LLC)</div>
-              <div><strong>Website:</strong> <a href="https://abeertrading.com" target="_blank" rel="noreferrer" style={{ color: '#38bdf8' }}>abeertrading.com</a></div>
+              <div><strong>Company Name:</strong> {siteConfig.companyName}</div>
+              <div><strong>Phone:</strong> <a href={`tel:${(siteConfig.phoneDirect || '').replace(/[^+\d]/g, '')}`} style={{ color: '#fff' }}>{siteConfig.phoneDirect}</a></div>
+              <div><strong>WhatsApp:</strong> <a href={`https://wa.me/${(siteConfig.whatsappNumber || '').replace(/[^\d]/g, '')}`} target="_blank" rel="noreferrer" style={{ color: '#4ade80' }}>{siteConfig.whatsappDisplay || siteConfig.phoneDirect}</a></div>
+              <div><strong>Email:</strong> <a href={`mailto:${siteConfig.email}`} style={{ color: '#38bdf8' }}>{siteConfig.email}</a></div>
+              <div><strong>Registered Address:</strong> {siteConfig.address?.full || `${siteConfig.address?.line1} ${siteConfig.address?.line2}`}</div>
+              <div><strong>Website:</strong> <a href={siteConfig.footer?.websiteUrl || `https://${siteConfig.website}`} target="_blank" rel="noreferrer" style={{ color: '#38bdf8' }}>{siteConfig.website}</a></div>
             </div>
           </div>
 
@@ -1634,39 +1753,41 @@ export default function App() {
           <div className="footer-col">
             <h4>Contacts</h4>
             <ul style={{ marginBottom: '20px' }}>
-              {/* 1. Name */}
+              {/* 1. Company Name */}
               <li>
-                <span style={{ color: '#94a3b8', fontSize: '0.74rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.04em' }}>Owner / Director</span>
-                <strong style={{ color: '#fff', fontSize: '0.94rem' }}>Tahir Mehmood</strong>
+                <span style={{ color: '#94a3b8', fontSize: '0.74rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.04em' }}>Company Name</span>
+                <strong style={{ color: '#fff', fontSize: '0.94rem' }}>{siteConfig.companyName}</strong>
               </li>
-              {/* 2. Address */}
-              <li style={{ marginTop: '8px' }}>
-                <span style={{ color: '#94a3b8', fontSize: '0.74rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.04em' }}>Official Address</span>
-                <span style={{ color: '#cbd5e1', fontSize: '0.85rem' }}>30 N Gould St # 68479 Sheridan, WY 82801</span>
-              </li>
-              {/* 3. Email */}
-              <li style={{ marginTop: '8px' }}>
-                <span style={{ color: '#94a3b8', fontSize: '0.74rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.04em' }}>Email</span>
-                <a href="mailto:abeertahir2025@gmail.com" style={{ color: '#38bdf8', fontSize: '0.88rem' }}>
-                  abeertahir2025@gmail.com
-                </a>
-              </li>
-              {/* 4. Phone */}
+              {/* 2. Phone Number */}
               <li style={{ marginTop: '8px' }}>
                 <span style={{ color: '#94a3b8', fontSize: '0.74rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.04em' }}>Phone</span>
-                <a href="tel:+966547035184" style={{ color: '#fff', fontSize: '0.88rem', fontWeight: '600' }}>
-                  (+966) 547035184
+                <a href={`tel:${(siteConfig.phoneDirect || '').replace(/[^+\d]/g, '')}`} style={{ color: '#fff', fontSize: '0.88rem', fontWeight: '600' }}>
+                  {siteConfig.phoneDirect}
                 </a>
               </li>
-              {/* 5. Store Name */}
+              {/* 3. WhatsApp Number */}
               <li style={{ marginTop: '8px' }}>
-                <span style={{ color: '#94a3b8', fontSize: '0.74rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.04em' }}>Store Name</span>
-                <span style={{ color: '#cbd5e1', fontSize: '0.85rem', fontWeight: '600' }}>Abeer Trading</span>
+                <span style={{ color: '#94a3b8', fontSize: '0.74rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.04em' }}>WhatsApp</span>
+                <a href={`https://wa.me/${(siteConfig.whatsappNumber || '').replace(/[^\d]/g, '')}`} target="_blank" rel="noreferrer" style={{ color: '#4ade80', fontSize: '0.88rem', fontWeight: '600' }}>
+                  {siteConfig.whatsappDisplay || siteConfig.phoneDirect}
+                </a>
+              </li>
+              {/* 4. Email */}
+              <li style={{ marginTop: '8px' }}>
+                <span style={{ color: '#94a3b8', fontSize: '0.74rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.04em' }}>Email</span>
+                <a href={`mailto:${siteConfig.email}`} style={{ color: '#38bdf8', fontSize: '0.88rem' }}>
+                  {siteConfig.email}
+                </a>
+              </li>
+              {/* 5. Registered Address */}
+              <li style={{ marginTop: '8px' }}>
+                <span style={{ color: '#94a3b8', fontSize: '0.74rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.04em' }}>Official Address</span>
+                <span style={{ color: '#cbd5e1', fontSize: '0.85rem' }}>{siteConfig.address?.line1}<br />{siteConfig.address?.line2}</span>
               </li>
               {/* 6. Website */}
               <li style={{ marginTop: '10px' }}>
-                <a href="https://abeertrading.com" target="_blank" rel="noreferrer" style={{ color: '#38bdf8', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.86rem' }}>
-                  <Globe size={14} /> abeertrading.com
+                <a href={siteConfig.footer?.websiteUrl || `https://${siteConfig.website}`} target="_blank" rel="noreferrer" style={{ color: '#38bdf8', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.86rem' }}>
+                  <Globe size={14} /> {siteConfig.website}
                 </a>
               </li>
             </ul>
@@ -1676,7 +1797,7 @@ export default function App() {
               <li><a href="https://facebook.com/" target="_blank" rel="noreferrer">Facebook</a></li>
               <li><a href="https://instagram.com/" target="_blank" rel="noreferrer">Instagram</a></li>
               <li><a href="https://tiktok.com/" target="_blank" rel="noreferrer">TikTok</a></li>
-              <li><a href="https://wa.me/966547035184" target="_blank" rel="noreferrer" style={{ color: '#4ade80' }}>WhatsApp</a></li>
+              <li><a href={`https://wa.me/${(siteConfig.whatsappNumber || '').replace(/[^\d]/g, '')}`} target="_blank" rel="noreferrer" style={{ color: '#4ade80' }}>WhatsApp</a></li>
             </ul>
           </div>
 
@@ -1730,10 +1851,10 @@ export default function App() {
 
         <div className="footer-bottom">
           <div>
-            © 2026 <strong>Abeer Trading LLC</strong>. All rights reserved.
+            © 2026 <strong>{siteConfig.companyName}</strong>. All rights reserved.
           </div>
           <div style={{ color: '#64748b' }}>
-            Managed by Tahir Mehmood • 30 N Gould St # 68479 Sheridan, WY 82801 • Tel: (+966) 547035184
+            {siteConfig.ownerName ? `Managed by ${siteConfig.ownerName} • ` : ''}{siteConfig.address?.full || `${siteConfig.address?.line1} ${siteConfig.address?.line2}`} • Tel: {siteConfig.phoneDirect}
           </div>
         </div>
       </footer>
@@ -1858,8 +1979,8 @@ export default function App() {
 
                 <div className="cart-footer-actions">
                   <a 
-                    href={`https://wa.me/966547035184?text=${encodeURIComponent(
-                      `Hello Tahir Mehmood, I want to place an order from Abeer Trading Company LLC:\n\n` +
+                    href={`https://wa.me/${(siteConfig.whatsappNumber || '').replace(/[^\d]/g, '')}?text=${encodeURIComponent(
+                      `Hello ${siteConfig.ownerName || siteConfig.companyName}, I want to place an order from ${siteConfig.companyName}:\n\n` +
                       cart.map(i => `• ${i.product.name} (SKU: ${i.product.sku}) - Qty: ${i.quantity} x ${i.product.price} = $${(i.product.priceNumeric * i.quantity).toLocaleString()}`).join('\n') +
                       `\n\nTotal Estimated: $${cartSubtotal.toLocaleString()}\nTotal Units: ${totalCartItems}`
                     )}`}
@@ -1927,7 +2048,7 @@ export default function App() {
                   </div>
                   <div className="form-group">
                     <label className="form-label">Phone Number / WhatsApp *</label>
-                    <input type="tel" required placeholder="(+966) 547035184" className="form-input" />
+                    <input type="tel" required placeholder={siteConfig.phoneDirect} className="form-input" />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Requested Quantity (Minimum: {selectedProduct.minOrder})</label>
@@ -1948,7 +2069,7 @@ export default function App() {
               <>
                 <h3 className="modal-title">Wholesale Partnership Today</h3>
                 <p className="modal-subtitle">
-                  Connect with Tahir Mehmood and the Abeer Trading executive desk.
+                  Connect with {siteConfig.ownerName ? `${siteConfig.ownerName} and the ` : ''}{siteConfig.shortName || siteConfig.companyName} executive desk.
                 </p>
                 <form onSubmit={handleFormSubmit} className="modal-form">
                   <div className="form-group">
@@ -1965,7 +2086,7 @@ export default function App() {
                   </div>
                   <div className="form-group">
                     <label className="form-label">Phone / WhatsApp *</label>
-                    <input type="tel" required placeholder="(+966) 547035184" className="form-input" />
+                    <input type="tel" required placeholder={siteConfig.phoneDirect} className="form-input" />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Categories of Interest</label>
@@ -1982,7 +2103,7 @@ export default function App() {
                     <textarea rows={3} placeholder="Tell us about your distribution needs..." className="form-textarea"></textarea>
                   </div>
                   <button type="submit" className="btn-submit-modal">
-                    Connect With Tahir Mehmood
+                    Connect With {siteConfig.ownerName || siteConfig.companyName}
                   </button>
                 </form>
               </>
@@ -2009,7 +2130,7 @@ export default function App() {
                   </div>
                   <div className="form-group">
                     <label className="form-label">WhatsApp / Phone Number *</label>
-                    <input type="tel" required placeholder="(+966) 547035184" className="form-input" />
+                    <input type="tel" required placeholder={siteConfig.phoneDirect} className="form-input" />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Delivery / Destination Address *</label>
@@ -2031,7 +2152,7 @@ export default function App() {
                 <CheckCircle2 size={24} color="#059669" />
                 <div>
                   <strong>Order / Inquiry Dispatched!</strong>
-                  <p style={{ fontSize: '0.85rem' }}>Tahir Mehmood and our logistics desk will confirm your order and send invoice details via WhatsApp and email promptly.</p>
+                  <p style={{ fontSize: '0.85rem' }}>{siteConfig.ownerName ? `${siteConfig.ownerName} and our ` : 'Our '}logistics desk will confirm your order and send invoice details via WhatsApp and email promptly.</p>
                 </div>
               </div>
             )}
